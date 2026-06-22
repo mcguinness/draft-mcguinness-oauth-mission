@@ -1204,10 +1204,13 @@ unspecified by agent-identity work for OAuth.<a href="#section-abstract-2" class
                 <p id="section-toc.1-1.1.2.5.1"><a href="#section-1.5" class="auto internal xref">1.5</a>.  <a href="#name-scope-and-future-work" class="internal xref">Scope and future work</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.6">
-                <p id="section-toc.1-1.1.2.6.1"><a href="#section-1.6" class="auto internal xref">1.6</a>.  <a href="#name-requirements-language" class="internal xref">Requirements Language</a></p>
+                <p id="section-toc.1-1.1.2.6.1"><a href="#section-1.6" class="auto internal xref">1.6</a>.  <a href="#name-non-goals" class="internal xref">Non-goals</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.7">
-                <p id="section-toc.1-1.1.2.7.1"><a href="#section-1.7" class="auto internal xref">1.7</a>.  <a href="#name-conformance" class="internal xref">Conformance</a></p>
+                <p id="section-toc.1-1.1.2.7.1"><a href="#section-1.7" class="auto internal xref">1.7</a>.  <a href="#name-requirements-language" class="internal xref">Requirements Language</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.8">
+                <p id="section-toc.1-1.1.2.8.1"><a href="#section-1.8" class="auto internal xref">1.8</a>.  <a href="#name-conformance" class="internal xref">Conformance</a></p>
 </li>
             </ul>
 </li>
@@ -1596,56 +1599,109 @@ example appendix), and a cross-domain status or event-distribution
 mechanism for tighter revocation.<a href="#section-1.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="requirements-language">
+<div id="non-goals">
 <section id="section-1.6">
-        <h3 id="name-requirements-language">
-<a href="#section-1.6" class="section-number selfRef">1.6. </a><a href="#name-requirements-language" class="section-name selfRef">Requirements Language</a>
+        <h3 id="name-non-goals">
+<a href="#section-1.6" class="section-number selfRef">1.6. </a><a href="#name-non-goals" class="section-name selfRef">Non-goals</a>
         </h3>
-<p id="section-1.6-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+<p id="section-1.6-1">The following are deliberately out of scope. Each is a recurring
+question for agent authorization; naming it here records that it was
+considered and where it belongs, not that it was overlooked.<a href="#section-1.6-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.6-2.1">
+            <p id="section-1.6-2.1.1"><strong>Semantic / intent verification.</strong> This profile binds a token to an
+approved authority and task; it does not evaluate whether a given
+runtime action serves the Mission's purpose beyond matching the
+approved <code>authorization_details</code> and <code>constraints</code>. Per-action
+evaluation is the runtime layer's role (<a href="#runtime-boundary" class="auto internal xref">Section 16.3</a>).
+Verifying an agent's declared reasoning against the task is a further
+attestation problem outside both layers.<a href="#section-1.6-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.6-2.2">
+            <p id="section-1.6-2.2.1"><strong>Just-in-time Mission expansion.</strong> The Authority Set is committed at
+approval; this profile defines no mid-stream, incremental
+authorization upgrade. Widening requires a new approval (a successor
+Mission); a JIT expansion protocol is future work.<a href="#section-1.6-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.6-2.3">
+            <p id="section-1.6-2.3.1"><strong>Lifecycle event distribution.</strong> A Resource Server learns Mission
+state from the token lifetime or optional introspection
+(<a href="#introspection" class="auto internal xref">Section 10</a>); this profile defines no push-based notification
+of Mission state changes. A Shared Signals (<span>[<a href="#RFC8935" class="cite xref">RFC8935</a>]</span>) / CAEP
+profile for Mission lifecycle events is future work.<a href="#section-1.6-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.6-2.4">
+            <p id="section-1.6-2.4.1"><strong>Human-in-the-loop suspension.</strong> The lifecycle here is <code>active</code>,
+<code>revoked</code>, <code>expired</code> (<a href="#lifecycle" class="auto internal xref">Section 9</a>); a <code>suspended</code> /
+pending-human-approval state, and a holding-token pause-and-resume
+protocol, are future lifecycle work.<a href="#section-1.6-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.6-2.5">
+            <p id="section-1.6-2.5.1"><strong>Multi-hop cross-domain provenance.</strong> A single cross-domain hop is
+supported (<a href="#cross-domain" class="auto internal xref">Section 13</a>); chaining a Mission across more than one
+trust-domain boundary, and the verifiable provenance that would
+require, are future work.<a href="#section-1.6-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.6-2.6">
+            <p id="section-1.6-2.6.1"><strong>Decentralized agent identity.</strong> Agent identity and credentialing
+are out of scope (<span>[<a href="#I-D.draft-klrc-aiagent-auth" class="cite xref">I-D.draft-klrc-aiagent-auth</a>]</span>, and workload
+identity efforts such as WIMSE); this profile governs the
+approved-task artifact those identities act within, not the
+identities themselves.<a href="#section-1.6-2.6.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="requirements-language">
+<section id="section-1.7">
+        <h3 id="name-requirements-language">
+<a href="#section-1.7" class="section-number selfRef">1.7. </a><a href="#name-requirements-language" class="section-name selfRef">Requirements Language</a>
+        </h3>
+<p id="section-1.7-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
 "<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
 described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
-appear in all capitals, as shown here.<a href="#section-1.6-1" class="pilcrow">¶</a></p>
-<p id="section-1.6-2">All JSON shown in this document is non-normative and illustrative; the
-member definitions in the surrounding text are authoritative.<a href="#section-1.6-2" class="pilcrow">¶</a></p>
+appear in all capitals, as shown here.<a href="#section-1.7-1" class="pilcrow">¶</a></p>
+<p id="section-1.7-2">All JSON shown in this document is non-normative and illustrative; the
+member definitions in the surrounding text are authoritative.<a href="#section-1.7-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conformance">
-<section id="section-1.7">
+<section id="section-1.8">
         <h3 id="name-conformance">
-<a href="#section-1.7" class="section-number selfRef">1.7. </a><a href="#name-conformance" class="section-name selfRef">Conformance</a>
+<a href="#section-1.8" class="section-number selfRef">1.8. </a><a href="#name-conformance" class="section-name selfRef">Conformance</a>
         </h3>
-<p id="section-1.7-1">An implementation conforms in one of two roles.<a href="#section-1.7-1" class="pilcrow">¶</a></p>
-<p id="section-1.7-2">A <strong>Mission Issuer</strong> (the Authorization Server) implements the core
-issuance surfaces:<a href="#section-1.7-2" class="pilcrow">¶</a></p>
+<p id="section-1.8-1">An implementation conforms in one of two roles.<a href="#section-1.8-1" class="pilcrow">¶</a></p>
+<p id="section-1.8-2">A <strong>Mission Issuer</strong> (the Authorization Server) implements the core
+issuance surfaces:<a href="#section-1.8-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-1.7-3.1">
-            <p id="section-1.7-3.1.1">submission of a Mission Intent via PAR (<a href="#mission-intent" class="auto internal xref">Section 4</a>);<a href="#section-1.7-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-1.8-3.1">
+            <p id="section-1.8-3.1.1">submission of a Mission Intent via PAR (<a href="#mission-intent" class="auto internal xref">Section 4</a>);<a href="#section-1.8-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.7-3.2">
-            <p id="section-1.7-3.2.1">derivation of <code>mission_resource_access</code> authorization details
-(<a href="#authorization-derivation" class="auto internal xref">Section 5</a>);<a href="#section-1.7-3.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.8-3.2">
+            <p id="section-1.8-3.2.1">derivation of <code>mission_resource_access</code> authorization details
+(<a href="#authorization-derivation" class="auto internal xref">Section 5</a>);<a href="#section-1.8-3.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.7-3.3">
-            <p id="section-1.7-3.3.1">the approval event with its integrity anchors (<a href="#approval-event" class="auto internal xref">Section 6</a>);<a href="#section-1.7-3.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.8-3.3">
+            <p id="section-1.8-3.3.1">the approval event with its integrity anchors (<a href="#approval-event" class="auto internal xref">Section 6</a>);<a href="#section-1.8-3.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.7-3.4">
-            <p id="section-1.7-3.4.1">issuance of Mission-bound access tokens carrying the <code>mission</code> claim
-(<a href="#mission-bound-tokens" class="auto internal xref">Section 8</a>);<a href="#section-1.7-3.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.8-3.4">
+            <p id="section-1.8-3.4.1">issuance of Mission-bound access tokens carrying the <code>mission</code> claim
+(<a href="#mission-bound-tokens" class="auto internal xref">Section 8</a>);<a href="#section-1.8-3.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.7-3.5">
-            <p id="section-1.7-3.5.1">the subset rule (<a href="#subset" class="auto internal xref">Section 11</a>); and<a href="#section-1.7-3.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.8-3.5">
+            <p id="section-1.8-3.5.1">the subset rule (<a href="#subset" class="auto internal xref">Section 11</a>); and<a href="#section-1.8-3.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-1.7-3.6">
-            <p id="section-1.7-3.6.1">gating of issuance on Mission state (<a href="#lifecycle" class="auto internal xref">Section 9</a>).<a href="#section-1.7-3.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-1.8-3.6">
+            <p id="section-1.8-3.6.1">gating of issuance on Mission state (<a href="#lifecycle" class="auto internal xref">Section 9</a>).<a href="#section-1.8-3.6.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-1.7-4">A <strong>Mission-aware Resource Server</strong> implements Resource Server
-enforcement (<a href="#rs-enforcement" class="auto internal xref">Section 8.2</a>).<a href="#section-1.7-4" class="pilcrow">¶</a></p>
-<p id="section-1.7-5">Delegation (<a href="#delegation" class="auto internal xref">Section 12</a>), token introspection (<a href="#introspection" class="auto internal xref">Section 10</a>),
+<p id="section-1.8-4">A <strong>Mission-aware Resource Server</strong> implements Resource Server
+enforcement (<a href="#rs-enforcement" class="auto internal xref">Section 8.2</a>).<a href="#section-1.8-4" class="pilcrow">¶</a></p>
+<p id="section-1.8-5">Delegation (<a href="#delegation" class="auto internal xref">Section 12</a>), token introspection (<a href="#introspection" class="auto internal xref">Section 10</a>),
 and cross-domain Missions (<a href="#cross-domain" class="auto internal xref">Section 13</a>) are <span class="bcp14">OPTIONAL</span> for either
 role; an implementation that does not support one of them is still
-conformant, and each section states its own optionality.<a href="#section-1.7-5" class="pilcrow">¶</a></p>
-<p id="section-1.7-6">The <code>mission_bound_authorization_supported</code> metadata (<a href="#discovery" class="auto internal xref">Section 3</a>)
+conformant, and each section states its own optionality.<a href="#section-1.8-5" class="pilcrow">¶</a></p>
+<p id="section-1.8-6">The <code>mission_bound_authorization_supported</code> metadata (<a href="#discovery" class="auto internal xref">Section 3</a>)
 advertises Mission Issuer support only. It makes no assertion about any
 Resource Server, which does not advertise through Authorization Server
 metadata. The <span class="bcp14">OPTIONAL</span> capabilities are discovered first through
@@ -1655,7 +1711,7 @@ introspection, and <code>grant_types_supported</code> containing
 cross-domain grant issuance. Absent such a signal, a capability is
 discovered out of band or by attempt: a Token Exchange, an ID-JAG
 issuance, or an introspection request fails if the issuer does not
-support it.<a href="#section-1.7-6" class="pilcrow">¶</a></p>
+support it.<a href="#section-1.8-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1790,7 +1846,7 @@ authorization server metadata <span>[<a href="#RFC8414" class="cite xref">RFC841
 <code>mission_bound_authorization_supported</code>:</dt>
         <dd style="margin-left: 1.5em" id="section-3-2.2">
           <p id="section-3-2.2.1"><span class="bcp14">OPTIONAL</span> boolean. When <code>true</code>, the AS supports the core Mission
-Issuer surfaces of this profile (<a href="#conformance" class="auto internal xref">Section 1.7</a>): the
+Issuer surfaces of this profile (<a href="#conformance" class="auto internal xref">Section 1.8</a>): the
 <code>mission_intent</code> authorization request parameter through PAR
 (<a href="#mission-intent" class="auto internal xref">Section 4</a>), derivation of <code>mission_resource_access</code>
 authorization details (<a href="#authorization-derivation" class="auto internal xref">Section 5</a>), Mission-bound
@@ -1798,7 +1854,7 @@ access tokens (<a href="#mission-bound-tokens" class="auto internal xref">Sectio
 (<a href="#mission-claim" class="auto internal xref">Section 8.1</a>). It asserts Mission Issuer support only; it makes
 no claim about any Resource Server, nor about the <span class="bcp14">OPTIONAL</span>
 capabilities (delegation, introspection, cross-domain Missions),
-which are discovered out of band or by attempt (<a href="#conformance" class="auto internal xref">Section 1.7</a>).<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
+which are discovered out of band or by attempt (<a href="#conformance" class="auto internal xref">Section 1.8</a>).<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
 </dd>
       <dd class="break"></dd>
 </dl>
@@ -1871,7 +1927,8 @@ date-time after which the Mission <span class="bcp14">MUST NOT</span> derive tok
 </li>
         <li class="normal" id="section-4-3.7">
           <p id="section-4-3.7.1"><code>context</code> (object, optional): machine-actionable bounds. This
-document defines two members; others <span class="bcp14">MAY</span> be added by deployments:<a href="#section-4-3.7.1" class="pilcrow">¶</a></p>
+document defines the members below; others <span class="bcp14">MAY</span> be added by
+deployments:<a href="#section-4-3.7.1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4-3.7.2.1">
               <p id="section-4-3.7.2.1.1"><code>acr</code> (string, optional): the minimum authentication context
@@ -1888,7 +1945,31 @@ derivation cap, not an end-to-end credential cap: it does not
 count local tokens a Resource AS mints from an ID-JAG, which the
 origin cannot observe (<a href="#lifecycle" class="auto internal xref">Section 9</a>).<a href="#section-4-3.7.2.2.1" class="pilcrow">¶</a></p>
 </li>
+            <li class="normal" id="section-4-3.7.2.3">
+              <p id="section-4-3.7.2.3.1"><code>max_budget</code> (object, optional): a hard cap on cumulative monetary
+spend under the Mission, an object with <code>amount</code> (string, a decimal
+number) and <code>currency</code> (string, an ISO 4217 currency code).<a href="#section-4-3.7.2.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4-3.7.2.4">
+              <p id="section-4-3.7.2.4.1"><code>max_calls</code> (array of object, optional): hard caps on the count of
+consequential call events, each an object with <code>scope</code> (string, the
+named call class) and <code>count</code> (integer, 1 or greater).<a href="#section-4-3.7.2.4.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-4-3.7.2.5">
+              <p id="section-4-3.7.2.5.1"><code>max_duration</code> (string, optional): an RFC 3339 <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span> duration
+bounding cumulative wall-clock consequential activity under the
+Mission. It is distinct from <code>mission_expiry</code>, which bounds
+issuance rather than activity.<a href="#section-4-3.7.2.5.1" class="pilcrow">¶</a></p>
+</li>
           </ul>
+<p id="section-4-3.7.3">
+<code>max_budget</code>, <code>max_calls</code>, and <code>max_duration</code> are <strong>consumption
+bounds</strong>: a deployment names them here so issuance and the runtime
+layer share one vocabulary. They are carried on the Mission and
+committed by <code>proposal_hash</code>, but, unlike <code>max_derivations</code>, they are
+not enforced by the AS at issuance. They are enforced at the point of
+use by the runtime layer (<a href="#runtime-boundary" class="auto internal xref">Section 16.3</a>); absent that layer
+they are not enforced.<a href="#section-4-3.7.3" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-4-4">Example Mission Intent:<a href="#section-4-4" class="pilcrow">¶</a></p>
@@ -1909,7 +1990,12 @@ origin cannot observe (<a href="#lifecycle" class="auto internal xref">Section 9
   "mission_expiry": "2026-12-31T23:59:59Z",
   "context": {
     "acr": "urn:example:acr:mfa",
-    "max_derivations": 200
+    "max_derivations": 200,
+    "max_budget": { "amount": "5000.00", "currency": "USD" },
+    "max_calls": [
+      { "scope": "journal-entries.write", "count": 50 }
+    ],
+    "max_duration": "PT8H"
   }
 }
 </pre><a href="#section-4-5" class="pilcrow">¶</a>
@@ -4140,6 +4226,10 @@ Server supports the Mission Issuer core surfaces of this document.<a href="#sect
         <dd>
 <span class="refAuthor">Lodderstedt, T., Ed.</span>, <span class="refAuthor">Dronia, S.</span>, and <span class="refAuthor">M. Scurtescu</span>, <span class="refTitle">"OAuth 2.0 Token Revocation"</span>, <span class="seriesInfo">RFC 7009</span>, <span class="seriesInfo">DOI 10.17487/RFC7009</span>, <time datetime="2013-08" class="refDate">August 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7009">https://www.rfc-editor.org/rfc/rfc7009</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="RFC8935">[RFC8935]</dt>
+        <dd>
+<span class="refAuthor">Backman, A., Ed.</span>, <span class="refAuthor">Jones, M., Ed.</span>, <span class="refAuthor">Scurtescu, M.</span>, <span class="refAuthor">Ansari, M.</span>, and <span class="refAuthor">A. Nadalin</span>, <span class="refTitle">"Push-Based Security Event Token (SET) Delivery Using HTTP"</span>, <span class="seriesInfo">RFC 8935</span>, <span class="seriesInfo">DOI 10.17487/RFC8935</span>, <time datetime="2020-11" class="refDate">November 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8935">https://www.rfc-editor.org/rfc/rfc8935</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC9493">[RFC9493]</dt>
         <dd>
 <span class="refAuthor">Backman, A., Ed.</span>, <span class="refAuthor">Scurtescu, M.</span>, and <span class="refAuthor">P. Jain</span>, <span class="refTitle">"Subject Identifiers for Security Event Tokens"</span>, <span class="seriesInfo">RFC 9493</span>, <span class="seriesInfo">DOI 10.17487/RFC9493</span>, <time datetime="2023-12" class="refDate">December 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9493">https://www.rfc-editor.org/rfc/rfc9493</a>&gt;</span>. </dd>
@@ -4230,7 +4320,12 @@ that identity; Stage 0 is otherwise unchanged from that specification.<a href="#
   "mission_expiry": "2026-12-31T23:59:59Z",
   "context": {
     "acr": "urn:example:acr:mfa",
-    "max_derivations": 200
+    "max_derivations": 200,
+    "max_budget": { "amount": "5000.00", "currency": "USD" },
+    "max_calls": [
+      { "scope": "journal-entries.write", "count": 50 }
+    ],
+    "max_duration": "PT8H"
   }
 }
 </pre><a href="#appendix-A.2-2" class="pilcrow">¶</a>

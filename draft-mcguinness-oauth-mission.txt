@@ -88,8 +88,9 @@ Table of Contents
      1.3.  Relationship to agent-identity specifications
      1.4.  Applicability
      1.5.  Scope and future work
-     1.6.  Requirements Language
-     1.7.  Conformance
+     1.6.  Non-goals
+     1.7.  Requirements Language
+     1.8.  Conformance
    2.  Overview
      2.1.  Terminology
      2.2.  Protocol flow
@@ -286,7 +287,48 @@ Table of Contents
    to-end example appendix), and a cross-domain status or event-
    distribution mechanism for tighter revocation.
 
-1.6.  Requirements Language
+1.6.  Non-goals
+
+   The following are deliberately out of scope.  Each is a recurring
+   question for agent authorization; naming it here records that it was
+   considered and where it belongs, not that it was overlooked.
+
+   *  *Semantic / intent verification.* This profile binds a token to an
+      approved authority and task; it does not evaluate whether a given
+      runtime action serves the Mission's purpose beyond matching the
+      approved authorization_details and constraints.  Per-action
+      evaluation is the runtime layer's role (Section 16.3).  Verifying
+      an agent's declared reasoning against the task is a further
+      attestation problem outside both layers.
+
+   *  *Just-in-time Mission expansion.* The Authority Set is committed
+      at approval; this profile defines no mid-stream, incremental
+      authorization upgrade.  Widening requires a new approval (a
+      successor Mission); a JIT expansion protocol is future work.
+
+   *  *Lifecycle event distribution.* A Resource Server learns Mission
+      state from the token lifetime or optional introspection
+      (Section 10); this profile defines no push-based notification of
+      Mission state changes.  A Shared Signals ([RFC8935]) / CAEP
+      profile for Mission lifecycle events is future work.
+
+   *  *Human-in-the-loop suspension.* The lifecycle here is active,
+      revoked, expired (Section 9); a suspended / pending-human-approval
+      state, and a holding-token pause-and-resume protocol, are future
+      lifecycle work.
+
+   *  *Multi-hop cross-domain provenance.* A single cross-domain hop is
+      supported (Section 13); chaining a Mission across more than one
+      trust-domain boundary, and the verifiable provenance that would
+      require, are future work.
+
+   *  *Decentralized agent identity.* Agent identity and credentialing
+      are out of scope ([I-D.draft-klrc-aiagent-auth], and workload
+      identity efforts such as WIMSE); this profile governs the
+      approved-task artifact those identities act within, not the
+      identities themselves.
+
+1.7.  Requirements Language
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
@@ -297,7 +339,7 @@ Table of Contents
    All JSON shown in this document is non-normative and illustrative;
    the member definitions in the surrounding text are authoritative.
 
-1.7.  Conformance
+1.8.  Conformance
 
    An implementation conforms in one of two roles.
 
@@ -417,14 +459,14 @@ Table of Contents
 
    mission_bound_authorization_supported:  OPTIONAL boolean.  When true,
       the AS supports the core Mission Issuer surfaces of this profile
-      (Section 1.7): the mission_intent authorization request parameter
+      (Section 1.8): the mission_intent authorization request parameter
       through PAR (Section 4), derivation of mission_resource_access
       authorization details (Section 5), Mission-bound access tokens
       (Section 8), and the mission JWT claim (Section 8.1).  It asserts
       Mission Issuer support only; it makes no claim about any Resource
       Server, nor about the OPTIONAL capabilities (delegation,
       introspection, cross-domain Missions), which are discovered out of
-      band or by attempt (Section 1.7).
+      band or by attempt (Section 1.8).
 
    An AS that advertises this profile SHOULD also include
    mission_resource_access in its authorization_details_types_supported
@@ -485,7 +527,8 @@ Table of Contents
       after which the Mission MUST NOT derive tokens.
 
    *  context (object, optional): machine-actionable bounds.  This
-      document defines two members; others MAY be added by deployments:
+      document defines the members below; others MAY be added by
+      deployments:
 
       -  acr (string, optional): the minimum authentication context
          class the Approver MUST satisfy at the approval event.
@@ -499,6 +542,29 @@ Table of Contents
          cap, not an end-to-end credential cap: it does not count local
          tokens a Resource AS mints from an ID-JAG, which the origin
          cannot observe (Section 9).
+
+      -  max_budget (object, optional): a hard cap on cumulative
+         monetary spend under the Mission, an object with amount
+         (string, a decimal number) and currency (string, an ISO 4217
+         currency code).
+
+      -  max_calls (array of object, optional): hard caps on the count
+         of consequential call events, each an object with scope
+         (string, the named call class) and count (integer, 1 or
+         greater).
+
+      -  max_duration (string, optional): an RFC 3339 [RFC3339] duration
+         bounding cumulative wall-clock consequential activity under the
+         Mission.  It is distinct from mission_expiry, which bounds
+         issuance rather than activity.
+
+      max_budget, max_calls, and max_duration are *consumption bounds*:
+      a deployment names them here so issuance and the runtime layer
+      share one vocabulary.  They are carried on the Mission and
+      committed by proposal_hash, but, unlike max_derivations, they are
+      not enforced by the AS at issuance.  They are enforced at the
+      point of use by the runtime layer (Section 16.3); absent that
+      layer they are not enforced.
 
    Example Mission Intent:
 
@@ -517,7 +583,12 @@ Table of Contents
      "mission_expiry": "2026-12-31T23:59:59Z",
      "context": {
        "acr": "urn:example:acr:mfa",
-       "max_derivations": 200
+       "max_derivations": 200,
+       "max_budget": { "amount": "5000.00", "currency": "USD" },
+       "max_calls": [
+         { "scope": "journal-entries.write", "count": 50 }
+       ],
+       "max_duration": "PT8H"
      }
    }
 
@@ -2378,6 +2449,11 @@ Table of Contents
               2.0 Token Revocation", RFC 7009, DOI 10.17487/RFC7009,
               August 2013, <https://www.rfc-editor.org/rfc/rfc7009>.
 
+   [RFC8935]  Backman, A., Ed., Jones, M., Ed., Scurtescu, M., Ansari,
+              M., and A. Nadalin, "Push-Based Security Event Token (SET)
+              Delivery Using HTTP", RFC 8935, DOI 10.17487/RFC8935,
+              November 2020, <https://www.rfc-editor.org/rfc/rfc8935>.
+
    [RFC9493]  Backman, A., Ed., Scurtescu, M., and P. Jain, "Subject
               Identifiers for Security Event Tokens", RFC 9493,
               DOI 10.17487/RFC9493, December 2023,
@@ -2454,7 +2530,12 @@ A.2.  Stage 1: Mission creation at the home AS
      "mission_expiry": "2026-12-31T23:59:59Z",
      "context": {
        "acr": "urn:example:acr:mfa",
-       "max_derivations": 200
+       "max_derivations": 200,
+       "max_budget": { "amount": "5000.00", "currency": "USD" },
+       "max_calls": [
+         { "scope": "journal-entries.write", "count": 50 }
+       ],
+       "max_duration": "PT8H"
      }
    }
 
