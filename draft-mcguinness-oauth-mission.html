@@ -1765,11 +1765,28 @@ issuance surfaces:<a href="#section-1.8-2" class="pilcrow">¶</a></p>
         </ul>
 <p id="section-1.8-4">A <strong>Mission-aware Resource Server</strong> implements Resource Server
 enforcement (<a href="#rs-enforcement" class="auto internal xref">Section 7.2</a>).<a href="#section-1.8-4" class="pilcrow">¶</a></p>
-<p id="section-1.8-5">Delegation (<a href="#delegation" class="auto internal xref">Section 10</a>), token introspection (<a href="#introspection" class="auto internal xref">Section 9</a>),
-and cross-domain Missions (<a href="#cross-domain" class="auto internal xref">Section 11</a>) are <span class="bcp14">OPTIONAL</span> for either
-role; an implementation that does not support one of them is still
-conformant, and each section states its own optionality.<a href="#section-1.8-5" class="pilcrow">¶</a></p>
-<p id="section-1.8-6">The <code>mission_bound_authorization_supported</code> metadata (<a href="#discovery" class="auto internal xref">Section 13</a>)
+<p id="section-1.8-5">Beyond these mandatory roles, this profile defines three <span class="bcp14">OPTIONAL</span>
+capabilities that an implementation <span class="bcp14">MAY</span> additionally claim. Each is
+independent, and an implementation that supports none of them is still
+conformant:<a href="#section-1.8-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1.8-6.1">
+            <p id="section-1.8-6.1.1"><strong>Delegation</strong> (<a href="#delegation" class="auto internal xref">Section 10</a>): issuing and consuming derived tokens
+that carry the <code>act</code> delegation chain.<a href="#section-1.8-6.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.8-6.2">
+            <p id="section-1.8-6.2.1"><strong>Introspection</strong> (<a href="#introspection" class="auto internal xref">Section 9</a>): reporting Mission state through
+the <code>mission</code> token introspection response member.<a href="#section-1.8-6.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-1.8-6.3">
+            <p id="section-1.8-6.3.1"><strong>Cross-Domain</strong> (<a href="#cross-domain" class="auto internal xref">Section 11</a>): issuing or honoring the
+cross-domain grant so a Mission spans more than one AS.<a href="#section-1.8-6.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-1.8-7">A conforming implementation names the optional capabilities it supports
+(for example, "Mission Issuer with Delegation and Cross-Domain"); each
+capability's own section states its detailed requirements.<a href="#section-1.8-7" class="pilcrow">¶</a></p>
+<p id="section-1.8-8">The <code>mission_bound_authorization_supported</code> metadata (<a href="#discovery" class="auto internal xref">Section 13</a>)
 advertises Mission Issuer support only. It makes no assertion about any
 Resource Server, which does not advertise through Authorization Server
 metadata. The <span class="bcp14">OPTIONAL</span> capabilities are discovered first through
@@ -1779,7 +1796,7 @@ introspection, and <code>grant_types_supported</code> containing
 cross-domain grant issuance. Absent such a signal, a capability is
 discovered out of band or by attempt: a Token Exchange, an ID-JAG
 issuance, or an introspection request fails if the issuer does not
-support it.<a href="#section-1.8-6" class="pilcrow">¶</a></p>
+support it.<a href="#section-1.8-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3436,15 +3453,18 @@ narrow it out too. The <code>mission</code> claim is unchanged.<a href="#section
       <h2 id="name-cross-domain-missions">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-cross-domain-missions" class="section-name selfRef">Cross-Domain Missions</a>
       </h2>
-<p id="section-11-1">A Mission is approved and held by one Mission Issuer (its <code>origin</code>).
+<p id="section-11-1">This section is <span class="bcp14">OPTIONAL</span>. The single-domain core is complete without
+it; a deployment whose Missions never leave their issuing AS is
+unaffected.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">A Mission is approved and held by one Mission Issuer (its <code>origin</code>).
 This section lets a single Mission be honored by Authorization
 Servers in other trust domains, so a Mission can span more than one
 AS, using the cross-domain authorization grant of the OAuth identity
 chaining architecture <span>[<a href="#I-D.draft-ietf-oauth-identity-chaining" class="cite xref">I-D.draft-ietf-oauth-identity-chaining</a>]</span>: the
 origin AS issues, through an <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> token exchange, a short-lived
 JWT authorization grant audienced to the target Authorization Server,
-which the client redeems there with the <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span> JWT-bearer grant.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">This document calls that artifact the <strong>cross-domain grant</strong> and
+which the client redeems there with the <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span> JWT-bearer grant.<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-3">This document calls that artifact the <strong>cross-domain grant</strong> and
 attaches Mission context to it (<a href="#cross-domain-grant" class="auto internal xref">Section 11.2</a>). The Identity
 Assertion Authorization Grant (ID-JAG)
 <span>[<a href="#I-D.draft-ietf-oauth-identity-assertion-authz-grant" class="cite xref">I-D.draft-ietf-oauth-identity-assertion-authz-grant</a>]</span> is the
@@ -3453,11 +3473,11 @@ this document uses it; another identity-chaining JWT authorization
 grant profile that meets the requirements of <a href="#cross-domain-grant" class="auto internal xref">Section 11.2</a>
         <span class="bcp14">MAY</span> be used instead. Where a requirement elsewhere in this document
 names the ID-JAG, it is illustrating with the recommended profile and
-applies equally to any conforming cross-domain grant.<a href="#section-11-2" class="pilcrow">¶</a></p>
-<p id="section-11-3">This entire section is <span class="bcp14">OPTIONAL</span>. An AS that issues no cross-domain
+applies equally to any conforming cross-domain grant.<a href="#section-11-3" class="pilcrow">¶</a></p>
+<p id="section-11-4">This entire section is <span class="bcp14">OPTIONAL</span>. An AS that issues no cross-domain
 grant, and a deployment confined to a single trust domain, ignore it;
-the rest of this document is fully implementable without it.<a href="#section-11-3" class="pilcrow">¶</a></p>
-<p id="section-11-4">This section is a thin Mission-bound profile of the cross-domain
+the rest of this document is fully implementable without it.<a href="#section-11-4" class="pilcrow">¶</a></p>
+<p id="section-11-5">This section is a thin Mission-bound profile of the cross-domain
 grant, not merely <code>mission</code>-claim carriage: beyond attaching and
 validating Mission context, it imposes two security requirements on the
 grant for Mission-bound use, proof-of-possession and single use
@@ -3467,11 +3487,11 @@ cross-domain grant profile (ID-JAG in the recommended case) and its
 underlying <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> and <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span>; this document does not redefine
 them. The two added requirements are a floor: the cross-domain grant is
 the highest-authority credential crossing a trust boundary, and its
-profile does not by itself guarantee them.<a href="#section-11-4" class="pilcrow">¶</a></p>
-<p id="section-11-5">In this model there is exactly one Mission Issuer per Mission (the
+profile does not by itself guarantee them.<a href="#section-11-5" class="pilcrow">¶</a></p>
+<p id="section-11-6">In this model there is exactly one Mission Issuer per Mission (the
 <code>origin</code>) and one or more <strong>Resource ASes</strong> in other domains that
 mint their own tokens for their resources. A Resource AS is never the
-Mission Issuer and <span class="bcp14">MUST NOT</span> create or alter a Mission.<a href="#section-11-5" class="pilcrow">¶</a></p>
+Mission Issuer and <span class="bcp14">MUST NOT</span> create or alter a Mission.<a href="#section-11-6" class="pilcrow">¶</a></p>
 <div id="audience-scope">
 <section id="section-11.1">
         <h3 id="name-audience-scoped-authority">
@@ -3805,12 +3825,17 @@ recorded, and make post-hoc tampering of those records detectable.<a href="#sect
 (<code>authority_hash</code>) the Approver consented to, but deliberately does
 not commit the <strong>rendered consent disclosure</strong> itself: the locale,
 disclosure-template version, and material notices the Approver was
-shown are not bound by any anchor here. A deployment that needs
-presentation-level audit evidence (proof that a specific disclosure
-object was the one presented) needs a <code>consent_rendering_hash</code> over a
-structured consent disclosure object; defining that object and anchor
-is deferred to future work, and an AS <span class="bcp14">MAY</span> record it out of band in
-the meantime.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
+shown are not bound by any anchor here. Because of this gap, a buggy or
+malicious rendering layer could mislead the Approver — showing a
+narrower or different task than the Authority Set actually committed —
+without leaving any committed trace. A deployment whose Missions carry
+high-risk authority <span class="bcp14">SHOULD</span> therefore record presentation-level audit
+evidence out of band: for example, a hash over the exact consent
+disclosure rendered to the Approver, retained so the disclosure shown
+can be reconstructed and audited after the fact. Binding this on the
+wire (a <code>consent_rendering_hash</code> over a structured consent-disclosure
+object) requires defining that object and anchor and is deferred to
+future work; an AS <span class="bcp14">MAY</span> record the evidence out of band in the meantime.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="mission-drift">
