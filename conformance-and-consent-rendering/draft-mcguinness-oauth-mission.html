@@ -3453,15 +3453,18 @@ narrow it out too. The <code>mission</code> claim is unchanged.<a href="#section
       <h2 id="name-cross-domain-missions">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-cross-domain-missions" class="section-name selfRef">Cross-Domain Missions</a>
       </h2>
-<p id="section-11-1">A Mission is approved and held by one Mission Issuer (its <code>origin</code>).
+<p id="section-11-1">This section is <span class="bcp14">OPTIONAL</span>. The single-domain core is complete without
+it; a deployment whose Missions never leave their issuing AS is
+unaffected.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">A Mission is approved and held by one Mission Issuer (its <code>origin</code>).
 This section lets a single Mission be honored by Authorization
 Servers in other trust domains, so a Mission can span more than one
 AS, using the cross-domain authorization grant of the OAuth identity
 chaining architecture <span>[<a href="#I-D.draft-ietf-oauth-identity-chaining" class="cite xref">I-D.draft-ietf-oauth-identity-chaining</a>]</span>: the
 origin AS issues, through an <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> token exchange, a short-lived
 JWT authorization grant audienced to the target Authorization Server,
-which the client redeems there with the <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span> JWT-bearer grant.<a href="#section-11-1" class="pilcrow">¶</a></p>
-<p id="section-11-2">This document calls that artifact the <strong>cross-domain grant</strong> and
+which the client redeems there with the <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span> JWT-bearer grant.<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-3">This document calls that artifact the <strong>cross-domain grant</strong> and
 attaches Mission context to it (<a href="#cross-domain-grant" class="auto internal xref">Section 11.2</a>). The Identity
 Assertion Authorization Grant (ID-JAG)
 <span>[<a href="#I-D.draft-ietf-oauth-identity-assertion-authz-grant" class="cite xref">I-D.draft-ietf-oauth-identity-assertion-authz-grant</a>]</span> is the
@@ -3470,11 +3473,11 @@ this document uses it; another identity-chaining JWT authorization
 grant profile that meets the requirements of <a href="#cross-domain-grant" class="auto internal xref">Section 11.2</a>
         <span class="bcp14">MAY</span> be used instead. Where a requirement elsewhere in this document
 names the ID-JAG, it is illustrating with the recommended profile and
-applies equally to any conforming cross-domain grant.<a href="#section-11-2" class="pilcrow">¶</a></p>
-<p id="section-11-3">This entire section is <span class="bcp14">OPTIONAL</span>. An AS that issues no cross-domain
+applies equally to any conforming cross-domain grant.<a href="#section-11-3" class="pilcrow">¶</a></p>
+<p id="section-11-4">This entire section is <span class="bcp14">OPTIONAL</span>. An AS that issues no cross-domain
 grant, and a deployment confined to a single trust domain, ignore it;
-the rest of this document is fully implementable without it.<a href="#section-11-3" class="pilcrow">¶</a></p>
-<p id="section-11-4">This section is a thin Mission-bound profile of the cross-domain
+the rest of this document is fully implementable without it.<a href="#section-11-4" class="pilcrow">¶</a></p>
+<p id="section-11-5">This section is a thin Mission-bound profile of the cross-domain
 grant, not merely <code>mission</code>-claim carriage: beyond attaching and
 validating Mission context, it imposes two security requirements on the
 grant for Mission-bound use, proof-of-possession and single use
@@ -3484,11 +3487,11 @@ cross-domain grant profile (ID-JAG in the recommended case) and its
 underlying <span>[<a href="#RFC8693" class="cite xref">RFC8693</a>]</span> and <span>[<a href="#RFC7523" class="cite xref">RFC7523</a>]</span>; this document does not redefine
 them. The two added requirements are a floor: the cross-domain grant is
 the highest-authority credential crossing a trust boundary, and its
-profile does not by itself guarantee them.<a href="#section-11-4" class="pilcrow">¶</a></p>
-<p id="section-11-5">In this model there is exactly one Mission Issuer per Mission (the
+profile does not by itself guarantee them.<a href="#section-11-5" class="pilcrow">¶</a></p>
+<p id="section-11-6">In this model there is exactly one Mission Issuer per Mission (the
 <code>origin</code>) and one or more <strong>Resource ASes</strong> in other domains that
 mint their own tokens for their resources. A Resource AS is never the
-Mission Issuer and <span class="bcp14">MUST NOT</span> create or alter a Mission.<a href="#section-11-5" class="pilcrow">¶</a></p>
+Mission Issuer and <span class="bcp14">MUST NOT</span> create or alter a Mission.<a href="#section-11-6" class="pilcrow">¶</a></p>
 <div id="audience-scope">
 <section id="section-11.1">
         <h3 id="name-audience-scoped-authority">
