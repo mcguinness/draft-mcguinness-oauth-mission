@@ -1462,7 +1462,9 @@ requesting consumer.<a href="#section-3.1-2.4.1" class="pilcrow">¶</a></p>
             <p id="section-3.1-2.6.1"><span class="bcp14">REQUIRED</span>. A string. A client-generated nonce binding the
 response to this request. It <span class="bcp14">MUST</span> be unique per request within the
 response lifetime; a consumer <span class="bcp14">MUST</span> reject a response whose <code>nonce</code>
-does not equal the one it sent.<a href="#section-3.1-2.6.1" class="pilcrow">¶</a></p>
+does not equal the one it sent. This is a standard client challenge:
+echoing it in the signed response anti-replay-binds that response to
+this specific request.<a href="#section-3.1-2.6.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
