@@ -1066,7 +1066,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">McGuinness</td>
-<td class="center">Expires 24 December 2026</td>
+<td class="center">Expires 25 December 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1079,12 +1079,12 @@ svg {
 <dd class="internet-draft">draft-mcguinness-oauth-mission-authzen-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-22" class="published">22 June 2026</time>
+<time datetime="2026-06-23" class="published">23 June 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-24">24 December 2026</time></dd>
+<dd class="expires"><time datetime="2026-12-25">25 December 2026</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1143,7 +1143,7 @@ enforcement semantics the base profile owns.<a href="#section-abstract-1" class=
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 24 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 25 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1433,7 +1433,7 @@ consequential action, Resource policy, decision, Mission state source,
 and enforcement scope are used as defined in
 <span>[<a href="#I-D.draft-mcguinness-oauth-mission-runtime" class="cite xref">I-D.draft-mcguinness-oauth-mission-runtime</a>]</span>. The Mission claim
 (<code>id</code>, <code>origin</code>, <code>authority_hash</code>), the integrity anchors
-(<code>proposal_hash</code>, <code>authority_hash</code>), and <code>authorization_details</code>
+(<code>intent_hash</code>, <code>authority_hash</code>), and <code>authorization_details</code>
 entries of type <code>mission_resource_access</code> are used as defined in
 <span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>.<a href="#section-2-3" class="pilcrow">¶</a></p>
 <p id="section-2-4">Additional terms specific to this binding:<a href="#section-2-4" class="pilcrow">¶</a></p>
@@ -1923,7 +1923,7 @@ concrete object an AuthZEN deployment emits.<a href="#section-5-1" class="pilcro
           <dd style="margin-left: 1.5em" id="section-5.1-1.4">
             <p id="section-5.1-1.4.1"><span class="bcp14">REQUIRED</span>. An object. the PDP request's <code>context.mission</code>
 object (<code>id</code>, <code>origin</code>, <code>authority_hash</code>, and, when known,
-<code>policy_version</code> and <code>policy_view_id</code>), extended with <code>proposal_hash</code>
+<code>policy_version</code> and <code>policy_view_id</code>), extended with <code>intent_hash</code>
 and, when known, a consent-disclosure commitment, so the evidence
 chains back to the exact approved Mission. Within <code>mission</code>, <code>id</code>,
 <code>origin</code>, and <code>authority_hash</code> are required; the others are optional.
@@ -2068,7 +2068,7 @@ unregistered formats.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
     "origin": "https://as.example.com",
     "authority_hash":
       "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE",
-    "proposal_hash":
+    "intent_hash":
       "sha-256:wQ7p4LHnX9Md0LqJ6sZJ8b8mZ3rN2xT5pV4lE6s",
     "policy_version": "deploy-policy:v17",
     "policy_view_id":
