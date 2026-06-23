@@ -1228,6 +1228,17 @@ produce.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-runtime-enforcement-evidenc" class="internal xref">Runtime enforcement evidence</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-required-decision-evidence" class="internal xref">Required decision evidence</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-execution-outcome-evidence" class="internal xref">Execution-outcome evidence</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.3">
+                <p id="section-toc.1-1.9.2.3.1"><a href="#section-9.3" class="auto internal xref">9.3</a>.  <a href="#name-record-integrity-and-retent" class="internal xref">Record integrity and retention</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
             <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-example-decision-api-bindin" class="internal xref">Example decision API binding: AuthZEN</a></p>
@@ -1257,10 +1268,13 @@ produce.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
                 <p id="section-toc.1-1.12.2.6.1"><a href="#section-12.6" class="auto internal xref">12.6</a>.  <a href="#name-toctou-and-replay" class="internal xref">TOCTOU and replay</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.7">
-                <p id="section-toc.1-1.12.2.7.1"><a href="#section-12.7" class="auto internal xref">12.7</a>.  <a href="#name-decision-channel-and-token-" class="internal xref">Decision channel and token disclosure</a></p>
+                <p id="section-toc.1-1.12.2.7.1"><a href="#section-12.7" class="auto internal xref">12.7</a>.  <a href="#name-confused-deputy-across-reso" class="internal xref">Confused deputy across resources</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.8">
-                <p id="section-toc.1-1.12.2.8.1"><a href="#section-12.8" class="auto internal xref">12.8</a>.  <a href="#name-evidence-privacy-and-correl" class="internal xref">Evidence privacy and correlation</a></p>
+                <p id="section-toc.1-1.12.2.8.1"><a href="#section-12.8" class="auto internal xref">12.8</a>.  <a href="#name-decision-channel-and-token-" class="internal xref">Decision channel and token disclosure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.9">
+                <p id="section-toc.1-1.12.2.9.1"><a href="#section-12.9" class="auto internal xref">12.9</a>.  <a href="#name-evidence-privacy-and-correl" class="internal xref">Evidence privacy and correlation</a></p>
 </li>
             </ul>
 </li>
@@ -1332,6 +1346,12 @@ from a Policy Decision Point (PDP) evaluating the action against the
 Mission. Mission-bound tokens bound what authority may exist; this
 profile defines where and how that authority is re-checked before
 consequential effects occur.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">This profile specifies enforcement invariants, not a wire protocol: it
+does not standardize a PDP decision API, an enforcement-scope discovery
+format, a Mission Status endpoint, or a portable audit receipt. It
+defines what a deployment <span class="bcp14">MUST</span> satisfy when it claims runtime Mission
+enforcement; the surfaces it deliberately leaves to deployments or
+future work are collected in <a href="#deferred" class="auto internal xref">Section 11</a>.<a href="#section-1-6" class="pilcrow">¶</a></p>
 <div id="relationship">
 <section id="section-1.1">
         <h3 id="name-relationship-to-the-issuanc">
@@ -1430,11 +1450,15 @@ it evaluated (<a href="#decision" class="auto internal xref">Section 5</a>).<a h
           <dd style="margin-left: 1.5em" id="section-1.2-3.12">
             <p id="section-1.2-3.12.1">A deployment-opaque identifier the PDP emits for the materialized
 policy and Mission view it evaluated against, so a permit and its
-evidence record tie to a reproducible decision basis. It is local to
+evidence record tie to a reproducible decision basis. It need not
+reveal policy content; it is a correlator that lets an operator
+determine which materialized policy, Mission state view, and
+constraint interpretation a decision used. It is local to
 the runtime layer and is distinct from the issuance profile's
 <code>policy_version</code> Mission-record field
 (<span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>); this document does not
-interpret it beyond correlation.<a href="#section-1.2-3.12.1" class="pilcrow">¶</a></p>
+interpret it beyond correlation, and defines no portable policy-version
+registry.<a href="#section-1.2-3.12.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 <dt id="section-1.2-3.13">Runtime enforcement evidence:</dt>
@@ -1526,51 +1550,60 @@ Mission's current state, and Resource policy, as defined in
 <a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-enforcement-scope-and-confo" class="section-name selfRef">Enforcement scope and conformance</a>
         </h3>
 <p id="section-2.2-1">This profile is implemented by a runtime deployment, not by an OAuth
-Authorization Server alone. A deployment that claims conformance to
-this profile <span class="bcp14">MUST</span> document its enforcement scope, including:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+Authorization Server alone. Three things conform, at different
+granularities: the <strong>runtime deployment</strong> (this section), the
+<strong>Resource Server runtime profile</strong> for OAuth-protected resources
+(<a href="#rs-runtime-profile" class="auto internal xref">Section 3</a>), and the <strong>PEP/PDP decision path</strong> for each
+consequential action (<a href="#decision" class="auto internal xref">Section 5</a>). Conformance is not global to a
+product, Authorization Server, Resource Server, or PDP: a deployment
+conforms to this profile only for the resources, action classes,
+execution paths, and authorization-detail types named in its
+enforcement scope.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">A deployment that claims conformance to this profile <span class="bcp14">MUST</span> document its
+enforcement scope, including:<a href="#section-2.2-2" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-2.2-2.1">
-            <p id="section-2.2-2.1.1">the protected resources, action classes, and execution paths it
-mediates;<a href="#section-2.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-2.2-3.1">
+            <p id="section-2.2-3.1.1">the protected resources, action classes, and execution paths it
+mediates;<a href="#section-2.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.2">
-            <p id="section-2.2-2.2.1">the PEP locations that can prevent those actions;<a href="#section-2.2-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.2">
+            <p id="section-2.2-3.2.1">the PEP locations that can prevent those actions;<a href="#section-2.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.3">
-            <p id="section-2.2-2.3.1">the PDP or PDPs that evaluate Mission-bound decisions;<a href="#section-2.2-2.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.3">
+            <p id="section-2.2-3.3.1">the PDP or PDPs that evaluate Mission-bound decisions;<a href="#section-2.2-3.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.4">
-            <p id="section-2.2-2.4.1">the <code>authorization_details</code> types, action identifiers, and constraint
-vocabularies it supports;<a href="#section-2.2-2.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.4">
+            <p id="section-2.2-3.4.1">the <code>authorization_details</code> types, action identifiers, and constraint
+vocabularies it supports;<a href="#section-2.2-3.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.5">
-            <p id="section-2.2-2.5.1">any Resource Server runtime profile and operation profiles it uses
-(<a href="#rs-runtime-profile" class="auto internal xref">Section 3</a>);<a href="#section-2.2-2.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.5">
+            <p id="section-2.2-3.5.1">any Resource Server runtime profile and operation profiles it uses
+(<a href="#rs-runtime-profile" class="auto internal xref">Section 3</a>);<a href="#section-2.2-3.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.6">
-            <p id="section-2.2-2.6.1">the Mission state source and maximum staleness bound used for each
-action class (<a href="#state-freshness" class="auto internal xref">Section 5.1</a>);<a href="#section-2.2-2.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.6">
+            <p id="section-2.2-3.6.1">the Mission state source and maximum staleness bound used for each
+action class (<a href="#state-freshness" class="auto internal xref">Section 5.1</a>);<a href="#section-2.2-3.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.7">
-            <p id="section-2.2-2.7.1">the runtime enforcement evidence mechanism and retention window
-(<a href="#evidence" class="auto internal xref">Section 9</a>); and<a href="#section-2.2-2.7.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.7">
+            <p id="section-2.2-3.7.1">the runtime enforcement evidence mechanism and retention window
+(<a href="#evidence" class="auto internal xref">Section 9</a>); and<a href="#section-2.2-3.7.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-2.2-2.8">
-            <p id="section-2.2-2.8.1">any consumption-metering consistency bound it advertises
-(<a href="#metering" class="auto internal xref">Section 7</a>).<a href="#section-2.2-2.8.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.8">
+            <p id="section-2.2-3.8.1">any consumption-metering consistency bound it advertises
+(<a href="#metering" class="auto internal xref">Section 7</a>).<a href="#section-2.2-3.8.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-2.2-3">A deployment <span class="bcp14">MUST NOT</span> claim runtime enforcement for a resource, action
+<p id="section-2.2-4">A deployment <span class="bcp14">MUST NOT</span> claim runtime enforcement for a resource, action
 class, <code>authorization_details</code> type, or execution path outside that
 declared scope. A Mission Issuer conforms to the issuance profile; it
 does not become a runtime-conforming deployment merely by issuing
-Mission-bound tokens.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
-<p id="section-2.2-4">The enforcement scope is a deployment conformance statement, not an
+Mission-bound tokens.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.2-5">The enforcement scope is a deployment conformance statement, not an
 OAuth Authorization Server metadata extension. This document defines no
 discovery mechanism, registry, or wire format for publishing it.
 Different deployments can document scope through configuration,
 operational policy, resource-server metadata defined elsewhere, or a
-contractual profile.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+contractual profile.<a href="#section-2.2-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="classification">
@@ -1646,7 +1679,20 @@ deployment <span class="bcp14">SHOULD</span> adopt, and a floor it <span class="
             </tr>
           </tbody>
         </table>
-<p id="section-2.3-3"><strong>Classification floor.</strong> Actions in the <strong>irreversible</strong>, <strong>external
+<p id="section-2.3-3">The table's per-class requirements (the PDP gate and parameter
+binding) are requirements for an action <strong>once it is assigned to that
+class</strong>. Assigning an action to a class is deployment policy, bounded
+by the floor below and by any Resource-policy minimum
+(<a href="#decision" class="auto internal xref">Section 5</a>): the profile does not require every read to reach a PDP.
+A read that is already fully constrained by the token's audience,
+resource, and the Resource Server's object-level authorization, and
+that does not materially affect the resource set or disclosure risk,
+need not be classified a consequential read, and is then not
+separately PDP-gated by this profile. A deployment <span class="bcp14">MUST NOT</span>, however,
+use classification to evade the floor or a Resource-policy minimum, and
+once an action is a consequential write or higher it <span class="bcp14">MUST</span> be gated and
+bound as the table requires.<a href="#section-2.3-3" class="pilcrow">¶</a></p>
+<p id="section-2.3-4"><strong>Classification floor.</strong> Actions in the <strong>irreversible</strong>, <strong>external
 commitment</strong>, and <strong>privileged administration</strong> classes <span class="bcp14">MUST</span> be
 treated as consequential and gated. A Mission's <code>purpose</code>, or
 deployment policy, <span class="bcp14">MAY</span> raise an action to a stricter class; it <span class="bcp14">MUST NOT</span> lower an action below any minimum classification the Resource
@@ -1654,17 +1700,17 @@ policy (<a href="#decision" class="auto internal xref">Section 5</a>) sets for i
 irreversible, external-commitment, or privileged-administration action
 as non-consequential. A deployment
 that leaves such an action ungated does not enforce this profile for
-that action's class (<a href="#pep-placement" class="auto internal xref">Section 2.4</a>).<a href="#section-2.3-3" class="pilcrow">¶</a></p>
-<p id="section-2.3-4">A deployment policy can require human confirmation, step-up
+that action's class (<a href="#pep-placement" class="auto internal xref">Section 2.4</a>).<a href="#section-2.3-4" class="pilcrow">¶</a></p>
+<p id="section-2.3-5">A deployment policy can require human confirmation, step-up
 authentication, or another local signal for privileged administration
-or external commitments. This profile does not define such a signal.<a href="#section-2.3-4" class="pilcrow">¶</a></p>
-<p id="section-2.3-5">Consequential reads do not require parameter binding by default.
+or external commitments. This profile does not define such a signal.<a href="#section-2.3-5" class="pilcrow">¶</a></p>
+<p id="section-2.3-6">Consequential reads do not require parameter binding by default.
 However, a deployment <span class="bcp14">MUST</span> bind or digest read parameters when those
 parameters materially change the effective resource set or disclosure
 risk. Examples include export-like reads, bulk reads, cross-tenant or
 cross-account queries, privacy-sensitive filters, field selection that
 controls sensitive attributes, destination or delivery parameters, and
-aggregation choices that affect re-identification risk.<a href="#section-2.3-5" class="pilcrow">¶</a></p>
+aggregation choices that affect re-identification risk.<a href="#section-2.3-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="pep-placement">
@@ -1847,7 +1893,10 @@ decision. Runtime enforcement <span class="bcp14">MUST</span> evaluate:<a href="
 <ul class="normal">
 <li class="normal" id="section-5-3.1">
           <p id="section-5-3.1.1"><strong>Authority.</strong> The action <span class="bcp14">MUST</span> be authorized by an applicable
-<code>authorization_details</code> entry in the token. For an entry of type
+<code>authorization_details</code> entry the Mission-bound token carries, or
+that is otherwise available to the PEP or PDP for that token under
+the issuance profile (for example, through introspection when the
+authority is not represented inline). For an entry of type
 <code>mission_resource_access</code>, the action's <code>resource</code> and invoked action
 or tool identity <span class="bcp14">MUST</span> be within that entry's <code>resource</code> and
 <code>actions</code>, under the subset rule of
@@ -1881,12 +1930,16 @@ disclosure-only treatment.<a href="#section-5-3.3.1" class="pilcrow">¶</a></p>
         <li class="normal" id="section-5-3.4">
           <p id="section-5-3.4.1"><strong>Actor.</strong> When delegation is in effect, the PDP <span class="bcp14">MUST</span> evaluate the
 authenticated <code>act</code> chain as part of the runtime actor context and
-refuse a chain that is missing or malformed. The runtime decision
-<span class="bcp14">MUST NOT</span> expand authority beyond the issued <code>authorization_details</code>;
-delegation constraints that the issuance profile applies at token
-issuance are not re-applied here unless the deployment documents
-them as runtime Resource policy. When an <code>act</code> chain is present, the
-PDP <span class="bcp14">MUST NOT</span> treat <code>client_id</code> alone as the immediate actor.<a href="#section-5-3.4.1" class="pilcrow">¶</a></p>
+refuse a chain that is missing or malformed. Runtime enforcement
+consumes the actor context that results from the issuance profile's
+delegation checks; it does not recompute the issuance-time subset
+validation, and the runtime decision <span class="bcp14">MUST NOT</span> expand authority beyond
+the issued <code>authorization_details</code>. The issuance profile's
+delegation constraints are not re-applied here unless the deployment
+documents them as runtime Resource policy, but a deployment <span class="bcp14">MAY</span> apply
+additional actor-sensitive Resource policy (<a href="#decision" class="auto internal xref">Section 5</a>). When an
+<code>act</code> chain is present, the PDP <span class="bcp14">MUST NOT</span> treat <code>client_id</code> alone as
+the immediate actor.<a href="#section-5-3.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-3.5">
           <p id="section-5-3.5.1"><strong>Time.</strong> The PDP <span class="bcp14">MUST</span> refuse if the decision context indicates the
@@ -2241,98 +2294,119 @@ integrity requirements. The concrete record schema, any interoperable
 canonical byte representation, separate Decision Evidence and
 Execution Evidence object schemas, and portable cross-domain receipts
 are out of scope (<a href="#deferred" class="auto internal xref">Section 11</a>).<a href="#section-9-1" class="pilcrow">¶</a></p>
-<p id="section-9-2">For an irreversible action, an external commitment, or privileged
+<div id="required-decision-evidence">
+<section id="section-9.1">
+        <h3 id="name-required-decision-evidence">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-required-decision-evidence" class="section-name selfRef">Required decision evidence</a>
+        </h3>
+<p id="section-9.1-1">A record <span class="bcp14">MUST</span> contain:<a href="#section-9.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.1-2.1">
+            <p id="section-9.1-2.1.1">the decision or refusal result and, on refusal, the failure condition
+from <a href="#failure-modes" class="auto internal xref">Section 8</a>;<a href="#section-9.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-2.2">
+            <p id="section-9.1-2.2.1">the request time (RFC 3339 <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span>); and<a href="#section-9.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-2.3">
+            <p id="section-9.1-2.3.1">the <code>parameter_digest</code> for parameter-bound classes, or a
+privacy-preserving digest of the evaluation request otherwise.<a href="#section-9.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-9.1-3">A record <span class="bcp14">MUST</span> also contain the following fields when they are available
+and trusted for the refusal or decision path:<a href="#section-9.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.1-4.1">
+            <p id="section-9.1-4.1.1">the Mission reference (<code>mission.id</code>, <code>mission.origin</code>) and the
+<code>authority_hash</code> (and <code>intent_hash</code> when known) it operated under;<a href="#section-9.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.2">
+            <p id="section-9.1-4.2.1">the token issuer and audience or protected-resource identifier when
+available;<a href="#section-9.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.3">
+            <p id="section-9.1-4.3.1">the authenticated <code>sub</code>, <code>client_id</code>, a client-instance identifier
+(a deployment-defined correlator) when present, the sender-constraint
+confirmation key when present, and the <code>act</code> chain projection when
+delegation applies;<a href="#section-9.1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.4">
+            <p id="section-9.1-4.4.1">the action and resource identifiers (and the asserted capability
+identity when applicable);<a href="#section-9.1-4.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.5">
+            <p id="section-9.1-4.5.1">the <code>authorization_details</code> type and authorizing entry, or a digest
+of that entry when recording the full entry would disclose excess
+authority or sensitive policy;<a href="#section-9.1-4.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.6">
+            <p id="section-9.1-4.6.1">the decision identifier, when the PDP produced one; and<a href="#section-9.1-4.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.1-4.7">
+            <p id="section-9.1-4.7.1">the PDP's policy-view version.<a href="#section-9.1-4.7.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-9.1-5">For a token-validation failure, the record <span class="bcp14">MUST NOT</span> describe
+unverified token claims as authenticated facts. It <span class="bcp14">MAY</span> include a digest
+of the presented token or rejected claim set for correlation and
+forensics, subject to the privacy requirements below.<a href="#section-9.1-5" class="pilcrow">¶</a></p>
+<p id="section-9.1-6">The <code>authority_hash</code> and <code>intent_hash</code> in a record are the
+originating AS's commitments, cited as anchors; the PDP does not
+recompute them and is not required to hold the full Authority Set to
+record them, consistent with <span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>.<a href="#section-9.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="execution-outcome-evidence">
+<section id="section-9.2">
+        <h3 id="name-execution-outcome-evidence">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-execution-outcome-evidence" class="section-name selfRef">Execution-outcome evidence</a>
+        </h3>
+<p id="section-9.2-1">For an irreversible action, an external commitment, or privileged
 administration, the executing PEP <span class="bcp14">MUST</span> also produce, after it acts, an
 execution-outcome record keyed to the permit's decision identifier,
 recording at least success or failure and the <code>parameter_digest</code>
 actually executed. This lets a decision and its execution be reconciled
 one to one, so a permit that was obtained but executed more than once,
 or executed for different parameters, is detectable after the fact. The
-detailed object schema is deferred (<a href="#deferred" class="auto internal xref">Section 11</a>).<a href="#section-9-2" class="pilcrow">¶</a></p>
-<p id="section-9-3">A record <span class="bcp14">MUST</span> contain:<a href="#section-9-3" class="pilcrow">¶</a></p>
+detailed object schema is deferred (<a href="#deferred" class="auto internal xref">Section 11</a>).<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="record-integrity-and-retention">
+<section id="section-9.3">
+        <h3 id="name-record-integrity-and-retent">
+<a href="#section-9.3" class="section-number selfRef">9.3. </a><a href="#name-record-integrity-and-retent" class="section-name selfRef">Record integrity and retention</a>
+        </h3>
+<p id="section-9.3-1">The following requirements apply to every record:<a href="#section-9.3-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9-4.1">
-          <p id="section-9-4.1.1">the decision or refusal result and, on refusal, the failure condition
-from <a href="#failure-modes" class="auto internal xref">Section 8</a>;<a href="#section-9-4.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-4.2">
-          <p id="section-9-4.2.1">the request time (RFC 3339 <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span>); and<a href="#section-9-4.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-4.3">
-          <p id="section-9-4.3.1">the <code>parameter_digest</code> for parameter-bound classes, or a
-privacy-preserving digest of the evaluation request otherwise.<a href="#section-9-4.3.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-9-5">A record <span class="bcp14">MUST</span> also contain the following fields when they are available
-and trusted for the refusal or decision path:<a href="#section-9-5" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-9-6.1">
-          <p id="section-9-6.1.1">the Mission reference (<code>mission.id</code>, <code>mission.origin</code>) and the
-<code>authority_hash</code> (and <code>intent_hash</code> when known) it operated under;<a href="#section-9-6.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.2">
-          <p id="section-9-6.2.1">the token issuer and audience or protected-resource identifier when
-available;<a href="#section-9-6.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.3">
-          <p id="section-9-6.3.1">the authenticated <code>sub</code>, <code>client_id</code>, a client-instance identifier
-(a deployment-defined correlator) when present, the sender-constraint
-confirmation key when present, and the <code>act</code> chain projection when
-delegation applies;<a href="#section-9-6.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.4">
-          <p id="section-9-6.4.1">the action and resource identifiers (and the asserted capability
-identity when applicable);<a href="#section-9-6.4.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.5">
-          <p id="section-9-6.5.1">the <code>authorization_details</code> type and authorizing entry, or a digest
-of that entry when recording the full entry would disclose excess
-authority or sensitive policy;<a href="#section-9-6.5.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.6">
-          <p id="section-9-6.6.1">the decision identifier, when the PDP produced one; and<a href="#section-9-6.6.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-9-6.7">
-          <p id="section-9-6.7.1">the PDP's policy-view version.<a href="#section-9-6.7.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-9-7">For a token-validation failure, the record <span class="bcp14">MUST NOT</span> describe
-unverified token claims as authenticated facts. It <span class="bcp14">MAY</span> include a digest
-of the presented token or rejected claim set for correlation and
-forensics, subject to the privacy requirements below.<a href="#section-9-7" class="pilcrow">¶</a></p>
-<p id="section-9-8">The <code>authority_hash</code> and <code>intent_hash</code> in a record are the
-originating AS's commitments, cited as anchors; the PDP does not
-recompute them and is not required to hold the full Authority Set to
-record them, consistent with <span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>.<a href="#section-9-8" class="pilcrow">¶</a></p>
-<p id="section-9-9">Requirements on the record:<a href="#section-9-9" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-9-10.1">
-          <p id="section-9-10.1.1">The Resource Server runtime profile <span class="bcp14">MUST</span> define the record's
+<li class="normal" id="section-9.3-2.1">
+            <p id="section-9.3-2.1.1">The Resource Server runtime profile <span class="bcp14">MUST</span> define the record's
 concrete serialization and canonicalization before storage and
 integrity protection. JSON records <span class="bcp14">SHOULD</span> use JCS <span>[<a href="#RFC8785" class="cite xref">RFC8785</a>]</span> under
-the issuance profile's canonicalization rules.<a href="#section-9-10.1.1" class="pilcrow">¶</a></p>
+the issuance profile's canonicalization rules.<a href="#section-9.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-10.2">
-          <p id="section-9-10.2.1">It <span class="bcp14">MUST</span> be append-only and integrity-protected; the enforcement
+          <li class="normal" id="section-9.3-2.2">
+            <p id="section-9.3-2.2.1">It <span class="bcp14">MUST</span> be append-only and integrity-protected; the enforcement
 scope <span class="bcp14">MUST</span> name the mechanism (a hash-linked log, signed segments, a
-transparency anchor, or equivalent).<a href="#section-9-10.2.1" class="pilcrow">¶</a></p>
+transparency anchor, or equivalent).<a href="#section-9.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-10.3">
-          <p id="section-9-10.3.1">Raw parameters <span class="bcp14">MUST NOT</span> appear in the record; when retained for
+          <li class="normal" id="section-9.3-2.3">
+            <p id="section-9.3-2.3.1">Raw parameters <span class="bcp14">MUST NOT</span> appear in the record; when retained for
 forensics they <span class="bcp14">MUST</span> be in separately access-controlled storage
 referenced by an opaque identifier, with only the
-<code>parameter_digest</code> in the record.<a href="#section-9-10.3.1" class="pilcrow">¶</a></p>
+<code>parameter_digest</code> in the record.<a href="#section-9.3-2.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-10.4">
-          <p id="section-9-10.4.1">Records for one Mission <span class="bcp14">MUST</span> carry a deployment-defined sequence
+          <li class="normal" id="section-9.3-2.4">
+            <p id="section-9.3-2.4.1">Records for one Mission <span class="bcp14">MUST</span> carry a deployment-defined sequence
 indicator so decision order can be reconstructed without relying on
-wall-clock time alone.<a href="#section-9-10.4.1" class="pilcrow">¶</a></p>
+wall-clock time alone.<a href="#section-9.3-2.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-10.5">
-          <p id="section-9-10.5.1">The enforcement scope <span class="bcp14">MUST</span> publish a retention window no shorter
-than the Mission's effective audit horizon.<a href="#section-9-10.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-9.3-2.5">
+            <p id="section-9.3-2.5.1">The enforcement scope <span class="bcp14">MUST</span> publish a retention window no shorter
+than the Mission's effective audit horizon.<a href="#section-9.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
-      </ul>
+        </ul>
+</section>
+</div>
 </section>
 </div>
 <div id="authzen">
@@ -2357,17 +2431,54 @@ present, and the <code>act</code> chain as an array ordered root to leaf.<a href
 </li>
       </ul>
 <p id="section-10-4">The AuthZEN <code>subject</code> remains the principal the decision is requested
-for. On permit, the response carries the policy-view version, a
+for; the invoked capability is the <code>action</code> and the target resource is
+the <code>resource</code>. An evaluation request might look like:<a href="#section-10-4" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-10-5">
+<pre>
+{
+  "subject":  { "type": "user", "id": "user_3p2q8mN1a0kV7tR" },
+  "action":   { "name": "journal-entries.write" },
+  "resource": { "type": "mission_resource_access",
+                "id": "https://erp.example.com" },
+  "context": {
+    "mission": {
+      "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+      "origin": "https://as.example.com",
+      "authority_hash": "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ",
+      "state": "active"
+    },
+    "actor": {
+      "client_id": "s6BhdRkqt3",
+      "act": [ { "sub": "tool-runner-7" } ]
+    }
+  }
+}
+</pre><a href="#section-10-5" class="pilcrow">¶</a>
+</div>
+<p id="section-10-6">On permit, the AuthZEN response carries the policy-view version, a
 decision identifier, the <code>parameter_digest</code> for parameter-bound
-classes, and a short validity window.<a href="#section-10-4" class="pilcrow">¶</a></p>
-<p id="section-10-5">This profile's substance is the
+classes, and a short validity window, for example:<a href="#section-10-6" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-10-7">
+<pre>
+{
+  "decision": true,
+  "context": {
+    "policy_view_version": "pv-2026-11-02-17",
+    "decision_id": "dec_K9pV4nT2sR7mB1xQ",
+    "parameter_digest": "sha-256:9XbVt2cF8gH2vJ4kE5pNQl3KvZ4mP5x0wQrR6tY2nD9",
+    "expires_at": "2026-11-02T08:15:30Z"
+  }
+}
+</pre><a href="#section-10-7" class="pilcrow">¶</a>
+</div>
+<p id="section-10-8">This profile's substance is the
 enforcement contract, action classification (<a href="#classification" class="auto internal xref">Section 2.3</a>), PEP
 placement (<a href="#pep-placement" class="auto internal xref">Section 2.4</a>), parameter binding (<a href="#parameter-binding" class="auto internal xref">Section 6</a>),
 consumption metering (<a href="#metering" class="auto internal xref">Section 7</a>), and runtime enforcement evidence
 (<a href="#evidence" class="auto internal xref">Section 9</a>), which is independent of the decision wire. The
 <code>context.mission</code> and <code>context.actor</code> example members above could be
 standardized separately as a Mission-bound AuthZEN binding without
-changing this contract.<a href="#section-10-5" class="pilcrow">¶</a></p>
+changing this contract.<a href="#section-10-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="deferred">
@@ -2507,27 +2618,44 @@ change between check and use. The executing PEP, not an upstream
 component, <span class="bcp14">MUST</span> perform the reverification.<a href="#section-12.6-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="decision-channel-and-token-disclosure">
+<div id="confused-deputy-across-resources">
 <section id="section-12.7">
-        <h3 id="name-decision-channel-and-token-">
-<a href="#section-12.7" class="section-number selfRef">12.7. </a><a href="#name-decision-channel-and-token-" class="section-name selfRef">Decision channel and token disclosure</a>
+        <h3 id="name-confused-deputy-across-reso">
+<a href="#section-12.7" class="section-number selfRef">12.7. </a><a href="#name-confused-deputy-across-reso" class="section-name selfRef">Confused deputy across resources</a>
         </h3>
-<p id="section-12.7-1">A separate PDP becomes part of the Resource Server's trusted
+<p id="section-12.7-1">The permit binding of <a href="#parameter-binding" class="auto internal xref">Section 6</a> ties a decision to the
+Mission, the token audience or protected resource, <code>sub</code>, <code>client_id</code>,
+actor context, action, and resource it evaluated. It follows that a PDP
+decision for one protected resource, audience, tenant, or operation is
+not reusable at another: the executing PEP, which reverifies those
+bindings before acting (<a href="#parameter-binding" class="auto internal xref">Section 6</a>), refuses a permit whose
+bindings do not match the boundary at which it is presented. A
+deployment <span class="bcp14">MUST NOT</span> relax those bindings in a way that would let a
+permit cross a resource, audience, tenant, or operation boundary it
+was not issued for.<a href="#section-12.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="decision-channel-and-token-disclosure">
+<section id="section-12.8">
+        <h3 id="name-decision-channel-and-token-">
+<a href="#section-12.8" class="section-number selfRef">12.8. </a><a href="#name-decision-channel-and-token-" class="section-name selfRef">Decision channel and token disclosure</a>
+        </h3>
+<p id="section-12.8-1">A separate PDP becomes part of the Resource Server's trusted
 authorization path for the operations in its enforcement scope. The
 PEP/PDP channel therefore needs mutual authentication, integrity
 protection, and authorization for the declared scope
 (<a href="#token-validation" class="auto internal xref">Section 4</a>). Passing full access tokens to a PDP also
 extends credential exposure beyond the Resource Server boundary; a
 deployment that does so needs the same credential handling, retention,
-and disclosure controls it applies at the Resource Server.<a href="#section-12.7-1" class="pilcrow">¶</a></p>
+and disclosure controls it applies at the Resource Server.<a href="#section-12.8-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="evidence-privacy-and-correlation">
-<section id="section-12.8">
+<section id="section-12.9">
         <h3 id="name-evidence-privacy-and-correl">
-<a href="#section-12.8" class="section-number selfRef">12.8. </a><a href="#name-evidence-privacy-and-correl" class="section-name selfRef">Evidence privacy and correlation</a>
+<a href="#section-12.9" class="section-number selfRef">12.9. </a><a href="#name-evidence-privacy-and-correl" class="section-name selfRef">Evidence privacy and correlation</a>
         </h3>
-<p id="section-12.8-1">Runtime enforcement evidence is intentionally durable and therefore
+<p id="section-12.9-1">Runtime enforcement evidence is intentionally durable and therefore
 sensitive. It can reveal a subject's resources, action timing,
 delegated actors, and Mission correlation identifier even when raw
 action parameters are not stored. Deployments <span class="bcp14">SHOULD</span> minimize recorded
@@ -2536,9 +2664,9 @@ are not needed for audit, restrict access to evidence by role, and
 document the retention window declared under <a href="#evidence" class="auto internal xref">Section 9</a>. Evidence
 shared across resource boundaries can also correlate activity by
 <code>mission.id</code> and <code>authority_hash</code>; deployments that require
-unlinkability need an additional privacy design outside this profile.<a href="#section-12.8-1" class="pilcrow">¶</a></p>
-<p id="section-12.8-2">General OAuth security guidance <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span> applies to the underlying
-credentials.<a href="#section-12.8-2" class="pilcrow">¶</a></p>
+unlinkability need an additional privacy design outside this profile.<a href="#section-12.9-1" class="pilcrow">¶</a></p>
+<p id="section-12.9-2">General OAuth security guidance <span>[<a href="#RFC9700" class="cite xref">RFC9700</a>]</span> applies to the underlying
+credentials.<a href="#section-12.9-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>

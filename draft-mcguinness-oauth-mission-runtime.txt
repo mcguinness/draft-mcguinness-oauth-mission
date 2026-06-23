@@ -92,6 +92,9 @@ Table of Contents
    7.  Consumption metering
    8.  Failure modes
    9.  Runtime enforcement evidence
+     9.1.  Required decision evidence
+     9.2.  Execution-outcome evidence
+     9.3.  Record integrity and retention
    10. Example decision API binding: AuthZEN
    11. Out of scope
    12. Security Considerations
@@ -101,8 +104,9 @@ Table of Contents
      12.4.  Freshness and consumption honesty
      12.5.  Resource policy remains authoritative
      12.6.  TOCTOU and replay
-     12.7.  Decision channel and token disclosure
-     12.8.  Evidence privacy and correlation
+     12.7.  Confused deputy across resources
+     12.8.  Decision channel and token disclosure
+     12.9.  Evidence privacy and correlation
    13. IANA Considerations
    14. References
      14.1.  Normative References
@@ -148,6 +152,13 @@ Table of Contents
    Mission.  Mission-bound tokens bound what authority may exist; this
    profile defines where and how that authority is re-checked before
    consequential effects occur.
+
+   This profile specifies enforcement invariants, not a wire protocol:
+   it does not standardize a PDP decision API, an enforcement-scope
+   discovery format, a Mission Status endpoint, or a portable audit
+   receipt.  It defines what a deployment MUST satisfy when it claims
+   runtime Mission enforcement; the surfaces it deliberately leaves to
+   deployments or future work are collected in Section 11.
 
 1.1.  Relationship to the issuance profile
 
@@ -223,10 +234,14 @@ Table of Contents
    Policy-view version:  A deployment-opaque identifier the PDP emits
       for the materialized policy and Mission view it evaluated against,
       so a permit and its evidence record tie to a reproducible decision
-      basis.  It is local to the runtime layer and is distinct from the
-      issuance profile's policy_version Mission-record field
+      basis.  It need not reveal policy content; it is a correlator that
+      lets an operator determine which materialized policy, Mission
+      state view, and constraint interpretation a decision used.  It is
+      local to the runtime layer and is distinct from the issuance
+      profile's policy_version Mission-record field
       ([I-D.draft-mcguinness-oauth-mission]); this document does not
-      interpret it beyond correlation.
+      interpret it beyond correlation, and defines no portable policy-
+      version registry.
 
    Runtime enforcement evidence:  The record a consequential action
       produces for a PDP decision or a PEP refusal path (Section 9).
@@ -281,8 +296,17 @@ Table of Contents
 2.2.  Enforcement scope and conformance
 
    This profile is implemented by a runtime deployment, not by an OAuth
-   Authorization Server alone.  A deployment that claims conformance to
-   this profile MUST document its enforcement scope, including:
+   Authorization Server alone.  Three things conform, at different
+   granularities: the *runtime deployment* (this section), the *Resource
+   Server runtime profile* for OAuth-protected resources (Section 3),
+   and the *PEP/PDP decision path* for each consequential action
+   (Section 5).  Conformance is not global to a product, Authorization
+   Server, Resource Server, or PDP: a deployment conforms to this
+   profile only for the resources, action classes, execution paths, and
+   authorization-detail types named in its enforcement scope.
+
+   A deployment that claims conformance to this profile MUST document
+   its enforcement scope, including:
 
    *  the protected resources, action classes, and execution paths it
       mediates;
@@ -358,6 +382,20 @@ Table of Contents
    +-------------------+------------------+----------+----------------+
 
                                  Table 1
+
+   The table's per-class requirements (the PDP gate and parameter
+   binding) are requirements for an action *once it is assigned to that
+   class*. Assigning an action to a class is deployment policy, bounded
+   by the floor below and by any Resource-policy minimum (Section 5):
+   the profile does not require every read to reach a PDP.  A read that
+   is already fully constrained by the token's audience, resource, and
+   the Resource Server's object-level authorization, and that does not
+   materially affect the resource set or disclosure risk, need not be
+   classified a consequential read, and is then not separately PDP-gated
+   by this profile.  A deployment MUST NOT, however, use classification
+   to evade the floor or a Resource-policy minimum, and once an action
+   is a consequential write or higher it MUST be gated and bound as the
+   table requires.
 
    *Classification floor.* Actions in the *irreversible*, *external
    commitment*, and *privileged administration* classes MUST be treated
@@ -539,7 +577,10 @@ Table of Contents
    decision.  Runtime enforcement MUST evaluate:
 
    *  *Authority.* The action MUST be authorized by an applicable
-      authorization_details entry in the token.  For an entry of type
+      authorization_details entry the Mission-bound token carries, or
+      that is otherwise available to the PEP or PDP for that token under
+      the issuance profile (for example, through introspection when the
+      authority is not represented inline).  For an entry of type
       mission_resource_access, the action's resource and invoked action
       or tool identity MUST be within that entry's resource and actions,
       under the subset rule of [I-D.draft-mcguinness-oauth-mission].
@@ -570,12 +611,16 @@ Table of Contents
 
    *  *Actor.* When delegation is in effect, the PDP MUST evaluate the
       authenticated act chain as part of the runtime actor context and
-      refuse a chain that is missing or malformed.  The runtime decision
-      MUST NOT expand authority beyond the issued authorization_details;
-      delegation constraints that the issuance profile applies at token
-      issuance are not re-applied here unless the deployment documents
-      them as runtime Resource policy.  When an act chain is present,
-      the PDP MUST NOT treat client_id alone as the immediate actor.
+      refuse a chain that is missing or malformed.  Runtime enforcement
+      consumes the actor context that results from the issuance
+      profile's delegation checks; it does not recompute the issuance-
+      time subset validation, and the runtime decision MUST NOT expand
+      authority beyond the issued authorization_details.  The issuance
+      profile's delegation constraints are not re-applied here unless
+      the deployment documents them as runtime Resource policy, but a
+      deployment MAY apply additional actor-sensitive Resource policy
+      (Section 5).  When an act chain is present, the PDP MUST NOT treat
+      client_id alone as the immediate actor.
 
    *  *Time.* The PDP MUST refuse if the decision context indicates the
       token is expired or the requested action would execute outside the
@@ -872,15 +917,7 @@ Table of Contents
    Evidence and Execution Evidence object schemas, and portable cross-
    domain receipts are out of scope (Section 11).
 
-   For an irreversible action, an external commitment, or privileged
-   administration, the executing PEP MUST also produce, after it acts,
-   an execution-outcome record keyed to the permit's decision
-   identifier, recording at least success or failure and the
-   parameter_digest actually executed.  This lets a decision and its
-   execution be reconciled one to one, so a permit that was obtained but
-   executed more than once, or executed for different parameters, is
-   detectable after the fact.  The detailed object schema is deferred
-   (Section 11).
+9.1.  Required decision evidence
 
    A record MUST contain:
 
@@ -927,7 +964,21 @@ Table of Contents
    and is not required to hold the full Authority Set to record them,
    consistent with [I-D.draft-mcguinness-oauth-mission].
 
-   Requirements on the record:
+9.2.  Execution-outcome evidence
+
+   For an irreversible action, an external commitment, or privileged
+   administration, the executing PEP MUST also produce, after it acts,
+   an execution-outcome record keyed to the permit's decision
+   identifier, recording at least success or failure and the
+   parameter_digest actually executed.  This lets a decision and its
+   execution be reconciled one to one, so a permit that was obtained but
+   executed more than once, or executed for different parameters, is
+   detectable after the fact.  The detailed object schema is deferred
+   (Section 11).
+
+9.3.  Record integrity and retention
+
+   The following requirements apply to every record:
 
    *  The Resource Server runtime profile MUST define the record's
       concrete serialization and canonicalization before storage and
@@ -967,9 +1018,41 @@ Table of Contents
       and the act chain as an array ordered root to leaf.
 
    The AuthZEN subject remains the principal the decision is requested
-   for.  On permit, the response carries the policy-view version, a
+   for; the invoked capability is the action and the target resource is
+   the resource.  An evaluation request might look like:
+
+   {
+     "subject":  { "type": "user", "id": "user_3p2q8mN1a0kV7tR" },
+     "action":   { "name": "journal-entries.write" },
+     "resource": { "type": "mission_resource_access",
+                   "id": "https://erp.example.com" },
+     "context": {
+       "mission": {
+         "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+         "origin": "https://as.example.com",
+         "authority_hash": "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ",
+         "state": "active"
+       },
+       "actor": {
+         "client_id": "s6BhdRkqt3",
+         "act": [ { "sub": "tool-runner-7" } ]
+       }
+     }
+   }
+
+   On permit, the AuthZEN response carries the policy-view version, a
    decision identifier, the parameter_digest for parameter-bound
-   classes, and a short validity window.
+   classes, and a short validity window, for example:
+
+   {
+     "decision": true,
+     "context": {
+       "policy_view_version": "pv-2026-11-02-17",
+       "decision_id": "dec_K9pV4nT2sR7mB1xQ",
+       "parameter_digest": "sha-256:9XbVt2cF8gH2vJ4kE5pNQl3KvZ4mP5x0wQrR6tY2nD9",
+       "expires_at": "2026-11-02T08:15:30Z"
+     }
+   }
 
    This profile's substance is the enforcement contract, action
    classification (Section 2.3), PEP placement (Section 2.4), parameter
@@ -1077,7 +1160,20 @@ Table of Contents
    between check and use.  The executing PEP, not an upstream component,
    MUST perform the reverification.
 
-12.7.  Decision channel and token disclosure
+12.7.  Confused deputy across resources
+
+   The permit binding of Section 6 ties a decision to the Mission, the
+   token audience or protected resource, sub, client_id, actor context,
+   action, and resource it evaluated.  It follows that a PDP decision
+   for one protected resource, audience, tenant, or operation is not
+   reusable at another: the executing PEP, which reverifies those
+   bindings before acting (Section 6), refuses a permit whose bindings
+   do not match the boundary at which it is presented.  A deployment
+   MUST NOT relax those bindings in a way that would let a permit cross
+   a resource, audience, tenant, or operation boundary it was not issued
+   for.
+
+12.8.  Decision channel and token disclosure
 
    A separate PDP becomes part of the Resource Server's trusted
    authorization path for the operations in its enforcement scope.  The
@@ -1088,7 +1184,7 @@ Table of Contents
    the same credential handling, retention, and disclosure controls it
    applies at the Resource Server.
 
-12.8.  Evidence privacy and correlation
+12.9.  Evidence privacy and correlation
 
    Runtime enforcement evidence is intentionally durable and therefore
    sensitive.  It can reveal a subject's resources, action timing,
