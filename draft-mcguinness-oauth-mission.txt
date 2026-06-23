@@ -138,18 +138,19 @@ Table of Contents
      14.6.  Cross-Domain Revocation Latency
      14.7.  Signing and Key Rotation
      14.8.  Compromised or Over-Broad Derivation
-     14.9.  Mission Identifier Correlation
-     14.10. Authority Hash Is Not a Mission Identifier
-   15. IANA Considerations
-     15.1.  OAuth Parameters Registration
-     15.2.  Authorization Details Type mission_resource_access
-     15.3.  JSON Web Token Claims Registration
-     15.4.  OAuth Token Introspection Response Registration
-     15.5.  OAuth Authorization Server Metadata Registration
-     15.6.  Mission Common Constraints Registry
-   16. References
-     16.1.  Normative References
-     16.2.  Informative References
+     14.9.  Authority Hash Is Not a Mission Identifier
+   15. Privacy Considerations
+     15.1.  Mission Identifier Correlation
+   16. IANA Considerations
+     16.1.  OAuth Parameters Registration
+     16.2.  Authorization Details Type mission_resource_access
+     16.3.  JSON Web Token Claims Registration
+     16.4.  OAuth Token Introspection Response Registration
+     16.5.  OAuth Authorization Server Metadata Registration
+     16.6.  Mission Common Constraints Registry
+   17. References
+     17.1.  Normative References
+     17.2.  Informative References
    Appendix A.  End-to-End Example (Non-Normative)
      A.1.  Stage 0: Agent Identity (by Reference)
      A.2.  Stage 1: Mission Creation at the Home AS
@@ -288,6 +289,16 @@ Table of Contents
    hop is supported as an optional binding (Section 11); the single-
    domain core is implementable without it.
 
+   Two normative dependencies are on in-progress individual drafts, so
+   this document cannot advance ahead of them: the OAuth Actor Profile
+   ([I-D.draft-mcguinness-oauth-actor-profile]) for the act chain, and
+   the identity-chaining and ID-JAG drafts
+   ([I-D.draft-ietf-oauth-identity-chaining],
+   [I-D.draft-ietf-oauth-identity-assertion-authz-grant]) for cross-
+   domain projection.  Both are confined to OPTIONAL capabilities
+   (Delegation and Cross-Domain), so the mandatory single-domain core
+   does not depend on them.
+
    Deferred to future work, and not required to implement this document,
    are: a substrate-neutral generalization of the Mission model (across
    non-OAuth authorization substrates), additional integrity anchors
@@ -322,10 +333,13 @@ Table of Contents
       Mission state changes.  A Shared Signals ([RFC8935]) / CAEP
       profile for Mission lifecycle events is future work.
 
-   *  *Human-in-the-loop suspension.* The lifecycle here is active,
-      revoked, expired (Section 8); a suspended / pending-human-approval
-      state, and a holding-token pause-and-resume protocol, are future
-      lifecycle work.
+   *  *Human-in-the-loop suspension.* The base lifecycle here is active,
+      revoked, expired (Section 8).  A suspended state with resume/
+      complete transitions is defined as an OPTIONAL extension by the
+      Mission Status and Lifecycle profile
+      ([I-D.draft-mcguinness-oauth-mission-status]); a pending-human-
+      approval state and a holding-token pause-and-resume protocol
+      remain future lifecycle work.
 
    *  *Multi-hop cross-domain provenance.* A single cross-domain hop is
       supported (Section 11); chaining a Mission across more than one
@@ -578,7 +592,9 @@ Table of Contents
          count of consequential call events.  Each object has the
          members:
 
-         scope:  REQUIRED.  A string.  The named call class.
+         call_class:  REQUIRED.  A string.  The named call class.
+            (Named call_class rather than scope to avoid collision with
+            the OAuth scope parameter and claim.)
 
          count:  REQUIRED.  An integer. 1 or greater.
 
@@ -616,7 +632,7 @@ Table of Contents
        "max_derivations": 200,
        "max_budget": { "amount": "5000.00", "currency": "USD" },
        "max_calls": [
-         { "scope": "journal-entries.write", "count": 50 }
+         { "call_class": "journal-entries.write", "count": 50 }
        ],
        "max_duration": "PT8H"
      }
@@ -679,7 +695,7 @@ Table of Contents
 
    From the Mission Intent, the AS derives the *Authority Set*: one or
    more [RFC9396] authorization_details entries of type
-   mission_resource_access (Section 15.2).  The AS MUST:
+   mission_resource_access (Section 16.2).  The AS MUST:
 
    *  Produce, for each resources entry the deployment recognizes, a
       mission_resource_access entry whose resource is that URI and whose
@@ -801,7 +817,7 @@ Table of Contents
    Constraint* or a deployment-defined key.  Common Constraints give
    independently developed deployments one vocabulary they interpret,
    narrow, and compare identically; the "Mission Common Constraints"
-   registry (Section 15.6) is the extension point.
+   registry (Section 16.6) is the extension point.
 
    A registered Common Constraint defines:
 
@@ -1301,11 +1317,14 @@ Table of Contents
    client.  Because the client submits mission_intent rather than
    authorization_details, the access token is otherwise the only place
    the granted authority appears, and a client is not expected to parse
-   the access token.  The AS therefore MUST return the granted
-   authorization_details in the token-endpoint response, per [RFC9396]
-   Section 7, reflecting exactly the (possibly narrowed) set assigned to
-   the issued token.  The same applies to refresh and Token Exchange
-   responses.
+   the access token for authority.  The AS therefore MUST return the
+   granted authorization_details in the token-endpoint response, per
+   [RFC9396] Section 7, reflecting exactly the (possibly narrowed) set
+   assigned to the issued token.  (A client does read the mission
+   claim's id from the token to learn its mission_id, per Section 5.1;
+   "not expected to parse for authority" refers only to the
+   authorization_details, which the response echoes.)  The same applies
+   to refresh and Token Exchange responses.
 
    Mission-bound refresh tokens MUST be sender-constrained or use
    refresh token rotation, especially for a public client, since
@@ -2211,9 +2230,9 @@ Table of Contents
    commit the *rendered consent disclosure* itself: the locale,
    disclosure-template version, and material notices the Approver was
    shown are not bound by any anchor here.  Because of this gap, a buggy
-   or malicious rendering layer could mislead the Approver — showing a
-   narrower or different task than the Authority Set actually committed
-   — without leaving any committed trace.  A deployment whose Missions
+   or malicious rendering layer could mislead the Approver, showing a
+   narrower or different task than the Authority Set actually committed,
+   without leaving any committed trace.  A deployment whose Missions
    carry high-risk authority SHOULD therefore record presentation-level
    audit evidence out of band: for example, a hash over the exact
    consent disclosure rendered to the Approver, retained so the
@@ -2330,21 +2349,7 @@ Table of Contents
    SHOULD record policy_version so a derivation can be audited and
    reproduced.  General OAuth security guidance [RFC9700] applies.
 
-14.9.  Mission Identifier Correlation
-
-   This document carries a single canonical mission_id on every derived
-   token and ID-JAG.  Any party that observes credentials for the same
-   Mission, whether a Resource Server, a Resource AS, or an auditor
-   spanning audiences, can correlate that activity by mission_id, and
-   mission.origin further identifies the issuing AS.  This profile does
-   not provide cross-audience unlinkability.  Audience-pairwise (or
-   request-pairwise) Mission references, in which the origin projects a
-   distinct opaque identifier per audience and resolves them server-
-   side, are the fuller mechanism for that and are deferred to future
-   work.  A deployment that carries the canonical mission_id on the wire
-   SHOULD document this correlation property.
-
-14.10.  Authority Hash Is Not a Mission Identifier
+14.9.  Authority Hash Is Not a Mission Identifier
 
    authority_hash commits the approved Authority Set, not the Mission.
    Two distinct Missions that approve byte-identical authority carry the
@@ -2359,9 +2364,25 @@ Table of Contents
    specific Mission uses mission_id, and intent_hash and approver
    distinguish Missions that share an Authority Set.
 
-15.  IANA Considerations
+15.  Privacy Considerations
 
-15.1.  OAuth Parameters Registration
+15.1.  Mission Identifier Correlation
+
+   This document carries a single canonical mission_id on every derived
+   token and ID-JAG.  Any party that observes credentials for the same
+   Mission, whether a Resource Server, a Resource AS, or an auditor
+   spanning audiences, can correlate that activity by mission_id, and
+   mission.origin further identifies the issuing AS.  This profile does
+   not provide cross-audience unlinkability.  Audience-pairwise (or
+   request-pairwise) Mission references, in which the origin projects a
+   distinct opaque identifier per audience and resolves them server-
+   side, are the fuller mechanism for that and are deferred to future
+   work.  A deployment that carries the canonical mission_id on the wire
+   SHOULD document this correlation property.
+
+16.  IANA Considerations
+
+16.1.  OAuth Parameters Registration
 
    This document registers the following in the "OAuth Parameters"
    registry:
@@ -2378,7 +2399,7 @@ Table of Contents
    distinct usage location, so the pushed submission of mission_intent
    needs no separate registration.
 
-15.2.  Authorization Details Type mission_resource_access
+16.2.  Authorization Details Type mission_resource_access
 
    mission_resource_access is an authorization_details type per
    [RFC9396] Section 2, defined by this document in Section 4.  RFC 9396
@@ -2388,7 +2409,7 @@ Table of Contents
    action here.  If a registry of authorization details types is
    established in the future, this type SHOULD be registered in it.
 
-15.3.  JSON Web Token Claims Registration
+16.3.  JSON Web Token Claims Registration
 
    This document registers the following in the "JSON Web Token Claims"
    registry:
@@ -2404,7 +2425,7 @@ Table of Contents
 
    *  Specification Document(s): this document, Section 7.1
 
-15.4.  OAuth Token Introspection Response Registration
+16.4.  OAuth Token Introspection Response Registration
 
    This document registers the following in the "OAuth Token
    Introspection Response" registry ([RFC7662]):
@@ -2420,7 +2441,7 @@ Table of Contents
 
    *  Reference: this document, Section 9
 
-15.5.  OAuth Authorization Server Metadata Registration
+16.5.  OAuth Authorization Server Metadata Registration
 
    This document registers the following in the "OAuth Authorization
    Server Metadata" registry ([RFC8414]):
@@ -2434,7 +2455,7 @@ Table of Contents
 
    *  Reference: this document, Section 13
 
-15.6.  Mission Common Constraints Registry
+16.6.  Mission Common Constraints Registry
 
    IANA is requested to create the "Mission Common Constraints"
    registry.  The registration policy is Specification Required
@@ -2461,9 +2482,9 @@ Table of Contents
 
    *  issued_before
 
-16.  References
+17.  References
 
-16.1.  Normative References
+17.1.  Normative References
 
    [I-D.draft-ietf-oauth-identity-assertion-authz-grant]
               Parecki, A., McGuinness, K., and B. Campbell, "Identity
@@ -2582,7 +2603,12 @@ Table of Contents
               Possession (DPoP)", RFC 9449, DOI 10.17487/RFC9449,
               September 2023, <https://www.rfc-editor.org/rfc/rfc9449>.
 
-16.2.  Informative References
+   [RFC9728]  Jones, M.B., Hunt, P., and A. Parecki, "OAuth 2.0
+              Protected Resource Metadata", RFC 9728,
+              DOI 10.17487/RFC9728, April 2025,
+              <https://www.rfc-editor.org/rfc/rfc9728>.
+
+17.2.  Informative References
 
    [I-D.draft-cecchetti-oauth-rar-cedar]
               Cecchetti, S., "Cedar Profile for OAuth 2.0 Rich
@@ -2605,6 +2631,13 @@ Table of Contents
               klrc-aiagent-auth-02, 1 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-klrc-aiagent-
               auth-02>.
+
+   [I-D.draft-mcguinness-oauth-mission-status]
+              McGuinness, K., "Mission Status and Lifecycle for OAuth
+              2.0", Work in Progress, Internet-Draft, draft-mcguinness-
+              oauth-mission-status, 2026,
+              <https://datatracker.ietf.org/doc/html/draft-mcguinness-
+              oauth-mission-status>.
 
    [I-D.draft-niyikiza-oauth-attenuating-agent-tokens]
               Aimable, N., "Attenuating Authorization Tokens for Agentic
@@ -2641,11 +2674,6 @@ Table of Contents
               "Best Current Practice for OAuth 2.0 Security", BCP 240,
               RFC 9700, DOI 10.17487/RFC9700, January 2025,
               <https://www.rfc-editor.org/rfc/rfc9700>.
-
-   [RFC9728]  Jones, M.B., Hunt, P., and A. Parecki, "OAuth 2.0
-              Protected Resource Metadata", RFC 9728,
-              DOI 10.17487/RFC9728, April 2025,
-              <https://www.rfc-editor.org/rfc/rfc9728>.
 
 Appendix A.  End-to-End Example (Non-Normative)
 
@@ -2711,7 +2739,7 @@ A.2.  Stage 1: Mission Creation at the Home AS
        "max_derivations": 200,
        "max_budget": { "amount": "5000.00", "currency": "USD" },
        "max_calls": [
-         { "scope": "journal-entries.write", "count": 50 }
+         { "call_class": "journal-entries.write", "count": 50 }
        ],
        "max_duration": "PT8H"
      }

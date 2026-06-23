@@ -1427,8 +1427,8 @@ the issuance profile defers. Unlike token introspection
 (<a href="#introspection-projection" class="auto internal xref">Section 4</a>), which answers "is this
 token's authorization still good," the Status operation answers "what
 is the state of this Mission" keyed by the <code>mission_id</code> alone. Any
-consumer holding a <code>mission_id</code> -- including an auditor or a
-cross-domain Resource AS -- resolves it without holding a token the AS
+consumer holding a <code>mission_id</code> (including an auditor or a
+cross-domain Resource AS) resolves it without holding a token the AS
 issued.<a href="#section-3-2" class="pilcrow">¶</a></p>
 <p id="section-3-3">The Mission Issuer publishes its Mission Status endpoint URL in
 Authorization Server metadata (<a href="#as-metadata" class="auto internal xref">Section 7</a>) as
@@ -1529,8 +1529,11 @@ mission=msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-
         </h3>
 <p id="section-3.4-1">On success the AS returns a JWS Compact Serialization <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span>
 signed with a key published in the AS's <code>jwks_uri</code>. The JWS header
-carries <code>typ</code> of <code>application/mission-status-response+jwt</code> (registered
-in <a href="#iana" class="auto internal xref">Section 11</a>) and a <code>kid</code> identifying the signing key.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+carries <code>typ</code> of <code>mission-status-response+jwt</code> and a <code>kid</code> identifying
+the signing key. Per <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> Section 4.1.9 the <code>typ</code> header omits
+the <code>application/</code> prefix; the full media type
+<code>application/mission-status-response+jwt</code> (registered in <a href="#iana" class="auto internal xref">Section 11</a>) is
+used as the HTTP <code>Content-Type</code>.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
 <p id="section-3.4-2"><span>[<a href="#RFC9701" class="cite xref">RFC9701</a>]</span> signed introspection responses are scoped to token
 introspection and do not apply to a lookup keyed by <code>mission_id</code>; the
 dedicated operation therefore uses a new media type and a JWS, not
@@ -1554,7 +1557,7 @@ eyJhbGciOiJFUzI1NiIsImtpZCI6InNhLWtleS0yMDI2LXEzIi...
 {
   "alg": "ES256",
   "kid": "sa-key-2026-q3",
-  "typ": "application/mission-status-response+jwt"
+  "typ": "mission-status-response+jwt"
 }
 </pre><a href="#section-3.4-6" class="pilcrow">¶</a>
 </div>
@@ -1763,7 +1766,12 @@ symbols are hard errors. The body of a hard error is a JSON object
 <p id="section-3.7-3">Terminal and suspended states return HTTP 200 with the signed Mission
 Status Response carrying <code>state</code>. Hard errors (<code>unauthorized</code>,
 <code>not_found</code>, <code>rate_limited</code>, <code>unavailable</code>) return the matching HTTP
-status with a JSON body:<a href="#section-3.7-3" class="pilcrow">¶</a></p>
+status with a JSON body. Note the distinction between the two access
+failures: <code>unauthorized</code> (401) means the request carried no valid
+authentication, whereas a request that is authenticated but not
+authorized for the referenced Mission returns <code>not_found</code> (404), never
+401, so that an unauthorized reference is indistinguishable from an
+unknown one (<a href="#mission-status-anti-oracle" class="auto internal xref">Section 3.6</a>). The error body is:<a href="#section-3.7-3" class="pilcrow">¶</a></p>
 <div class="lang-http-message sourcecode" id="section-3.7-4">
 <pre>
 HTTP/1.1 404 Not Found
@@ -1792,9 +1800,10 @@ body member in seconds.<a href="#section-3.7-5" class="pilcrow">¶</a></p>
       <h2 id="name-token-introspection-mission">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-token-introspection-mission" class="section-name selfRef">Token Introspection Mission Projection</a>
       </h2>
-<p id="section-4-1">This section is <span class="bcp14">OPTIONAL</span> and is a thin delta over the token
-introspection of <span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span> (Section
-"Mission State via Token Introspection"). That section already
+<p id="section-4-1">This section is <span class="bcp14">OPTIONAL</span> and is a thin delta over the OAuth 2.0 Token
+Introspection <span>[<a href="#RFC7662" class="cite xref">RFC7662</a>]</span> projection of
+<span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span> (Section "Mission State via
+Token Introspection"). That section already
 defines a <code>mission</code> member on the introspection response carrying
 <code>id</code>, <code>origin</code>, <code>authority_hash</code>, and (from the Mission origin) the
 lifecycle <code>state</code>, together with the caller-authorization,
@@ -1818,7 +1827,10 @@ metadata <span>[<a href="#RFC8414" class="cite xref">RFC8414</a>]</span>.<a href
 additionally carry <code>expires_at</code>, an <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span> string giving the
 point until which the consumer <span class="bcp14">MAY</span> rely on the reported <code>state</code>
 without re-checking, governed by the caching rule of
-<a href="#mission-status-caching" class="auto internal xref">Section 3.5</a>.<a href="#section-4-3.2.1" class="pilcrow">¶</a></p>
+<a href="#mission-status-caching" class="auto internal xref">Section 3.5</a>. When <code>expires_at</code> is absent (for example
+a non-origin projection), the consumer <span class="bcp14">MUST NOT</span> cache the reported
+<code>state</code> across requests and re-checks per use or relies on the
+token's own lifetime.<a href="#section-4-3.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-4-4">This projection and the dedicated Mission Status Response
@@ -1984,7 +1996,13 @@ mission=msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-
 </pre><a href="#section-5.4-2" class="pilcrow">¶</a>
 </div>
 <p id="section-5.4-3">Revoke success response: the AS returns the updated status as a signed
-Mission Status Response (<a href="#mission-status-response" class="auto internal xref">Section 3.4</a>):<a href="#section-5.4-3" class="pilcrow">¶</a></p>
+Mission Status Response (<a href="#mission-status-response" class="auto internal xref">Section 3.4</a>). Because the
+Lifecycle request carries no <code>audience</code>, the AS sets <code>aud</code> to the
+authenticated requester and <span class="bcp14">MAY</span> omit <code>authorization_details</code> (a
+lifecycle confirmation reports <code>state</code>, not audience-scoped authority);
+<code>sub</code> is the authenticated requesting client, as for any Mission Status
+Response, while the human actor behind the operation is recorded only
+in the audit log.<a href="#section-5.4-3" class="pilcrow">¶</a></p>
 <div class="lang-http-message sourcecode" id="section-5.4-4">
 <pre>
 HTTP/1.1 200 OK
@@ -2000,7 +2018,7 @@ eyJhbGciOiJFUzI1NiIsImtpZCI6InNhLWtleS0yMDI2LXEzIi...
 {
   "iss": "https://as.example.com",
   "aud": "https://erp.example.com",
-  "sub": "user_3p2q8mN1a0kV7tR",
+  "sub": "client_erp-recon-agent",
   "nonce": "nonce_8Y3vN0sM6tP1xR9bQ5",
   "iat": 1797843200,
   "exp": 1797843260,
@@ -2262,8 +2280,8 @@ requires.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
 <p id="section-8.5-1">The AS signs Mission Status and Lifecycle responses with a key from
 its <code>jwks_uri</code>. The AS <span class="bcp14">MUST</span> retain the public JWK for every <code>kid</code> it
 has signed such a response under, indexed by <code>kid</code>, for at least the
-Mission record retention period -- even after the key is rotated out
-of the live <code>jwks_uri</code> -- so an archived
+Mission record retention period (even after the key is rotated out
+of the live <code>jwks_uri</code>), so an archived
 <code>application/mission-status-response+jwt</code> remains verifiable for audit
 and dispute. The AS <span class="bcp14">MAY</span> expose retired verification keys through a
 deployment-defined audit interface but <span class="bcp14">MUST NOT</span> serve them as active
@@ -2311,8 +2329,8 @@ never sees entries addressed to other audiences
         <h3 id="name-status-audit-logging">
 <a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-status-audit-logging" class="section-name selfRef">Status Audit Logging</a>
         </h3>
-<p id="section-9.2-1">The AS records Status and Lifecycle requests -- containing
-<code>mission_id</code>, audience, caller, and timing -- in audit logs.
+<p id="section-9.2-1">The AS records Status and Lifecycle requests (containing
+<code>mission_id</code>, audience, caller, and timing) in audit logs.
 Deployments <span class="bcp14">MUST</span> treat these logs as PII sinks per the issuance
 profile's privacy considerations.<a href="#section-9.2-1" class="pilcrow">¶</a></p>
 </section>
@@ -2516,6 +2534,10 @@ Authorization work for feedback that shaped these extensions.<a href="#section-1
 <dt id="RFC7523">[RFC7523]</dt>
         <dd>
 <span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Campbell, B.</span>, and <span class="refAuthor">C. Mortimore</span>, <span class="refTitle">"JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants"</span>, <span class="seriesInfo">RFC 7523</span>, <span class="seriesInfo">DOI 10.17487/RFC7523</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7523">https://www.rfc-editor.org/rfc/rfc7523</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7662">[RFC7662]</dt>
+        <dd>
+<span class="refAuthor">Richer, J., Ed.</span>, <span class="refTitle">"OAuth 2.0 Token Introspection"</span>, <span class="seriesInfo">RFC 7662</span>, <span class="seriesInfo">DOI 10.17487/RFC7662</span>, <time datetime="2015-10" class="refDate">October 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7662">https://www.rfc-editor.org/rfc/rfc7662</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>

@@ -1318,24 +1318,29 @@ Framework <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span> stre
 metadata (<a href="#as-metadata" class="auto internal xref">Section 8</a>) as <code>mission_event_stream_endpoint</code>. The
 endpoint and its configuration follow <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span>; this document
 profiles only the event carried, its protection, and the consumer's
-duty on receipt. The stream <span class="bcp14">MUST</span> be served over TLS.<a href="#section-3-2" class="pilcrow">¶</a></p>
-<p id="section-3-3">The Mission Issuer advertises the delivery modes it supports in
-<code>mission_event_delivery_modes_supported</code> (<a href="#as-metadata" class="auto internal xref">Section 8</a>):<a href="#section-3-3" class="pilcrow">¶</a></p>
+duty on receipt. The stream <span class="bcp14">MUST</span> be served over TLS 1.2 or later (TLS
+1.3 <span class="bcp14">RECOMMENDED</span>), following the recommendations of <span>[<a href="#RFC9325" class="cite xref">RFC9325</a>]</span>.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">Delivery uses the Shared Signals Framework delivery methods, advertised
+in the SSF stream configuration's <code>delivery_methods_supported</code>
+        <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span>:<a href="#section-3-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3-4.1">
-          <p id="section-3-4.1.1"><code>ssf_push</code>: the Mission Issuer pushes SETs <span>[<a href="#RFC8417" class="cite xref">RFC8417</a>]</span> to a
-consumer's registered receiver endpoint using push-based delivery
-<span>[<a href="#RFC8935" class="cite xref">RFC8935</a>]</span>.<a href="#section-3-4.1.1" class="pilcrow">¶</a></p>
+          <p id="section-3-4.1.1">push-based delivery, SET delivery method <code>urn:ietf:rfc:8935</code>
+            <span>[<a href="#RFC8935" class="cite xref">RFC8935</a>]</span>: the Mission Issuer pushes SETs <span>[<a href="#RFC8417" class="cite xref">RFC8417</a>]</span> to a
+consumer's registered receiver endpoint.<a href="#section-3-4.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-3-4.2">
-          <p id="section-3-4.2.1"><code>ssf_poll</code>: the Mission Issuer makes SETs available for the consumer
-to poll using poll-based delivery <span>[<a href="#RFC8936" class="cite xref">RFC8936</a>]</span>.<a href="#section-3-4.2.1" class="pilcrow">¶</a></p>
+          <p id="section-3-4.2.1">poll-based delivery, SET delivery method <code>urn:ietf:rfc:8936</code>
+            <span>[<a href="#RFC8936" class="cite xref">RFC8936</a>]</span>: the Mission Issuer makes SETs available for the consumer
+to poll.<a href="#section-3-4.2.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-3-5">A Mission Issuer that emits events <span class="bcp14">MUST</span> support at least one mode. A
-consumer's stream configuration declares the mode it uses; the Mission
-Issuer <span class="bcp14">MUST</span> respect it and <span class="bcp14">MUST NOT</span> silently fall back to a less-timely
-mode.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<p id="section-3-5">A Mission Issuer that emits events <span class="bcp14">MUST</span> support at least one method,
+and a consumer discovers the supported methods from the SSF stream
+configuration rather than from a separate Authorization Server metadata
+member. The consumer's stream configuration declares the method it
+uses; the Mission Issuer <span class="bcp14">MUST</span> respect it and <span class="bcp14">MUST NOT</span> silently fall
+back to a less-timely method.<a href="#section-3-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="lifecycle-event">
@@ -1343,17 +1348,19 @@ mode.<a href="#section-3-5" class="pilcrow">¶</a></p>
       <h2 id="name-the-missionlifecycle-change">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-the-missionlifecycle-change" class="section-name selfRef">The <code>mission.lifecycle-change</code> Event</a>
       </h2>
-<p id="section-4-1">A Mission Issuer emits a <code>mission.lifecycle-change</code> event, aligned with
-the Continuous Access Evaluation Profile <span>[<a href="#OIDC-CAEP" class="cite xref">OIDC-CAEP</a>]</span>, when it commits
-any Mission lifecycle transition or the approval event that activates a
-Mission. The event type URI, registered in <a href="#iana" class="auto internal xref">Section 12</a>, is:<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">A Mission Issuer emits a <code>mission.lifecycle-change</code> event, carried in
+the Security Event Token shape of the Shared Signals Framework
+<span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span> and informed by the Continuous Access Evaluation Profile
+<span>[<a href="#OIDC-CAEP" class="cite xref">OIDC-CAEP</a>]</span>, when it commits any Mission lifecycle transition or the
+approval event that activates a Mission. The event type URI, registered
+in <a href="#iana" class="auto internal xref">Section 12</a>, is:<a href="#section-4-1" class="pilcrow">¶</a></p>
 <p id="section-4-2"><code>https://schemas.karlmcguinness.com/secevent/mission/lifecycle-change</code><a href="#section-4-2" class="pilcrow">¶</a></p>
 <p id="section-4-3">The event is carried as the event-type-keyed value of the <code>events</code>
 claim of a SET <span>[<a href="#RFC8417" class="cite xref">RFC8417</a>]</span>, alongside the SET's own <code>iss</code>, <code>aud</code>,
-<code>iat</code>, and <code>jti</code>. Its claims are:<a href="#section-4-3" class="pilcrow">¶</a></p>
+<code>iat</code>, <code>exp</code>, and <code>jti</code>. Its claims are:<a href="#section-4-3" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4-4.1">
-          <p id="section-4-4.1.1"><code>mission</code> (string, required): the canonical <code>mission_id</code>
+          <p id="section-4-4.1.1"><code>mission_id</code> (string, required): the canonical <code>mission_id</code>
 (<span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>).<a href="#section-4-4.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-4.2">
@@ -1374,10 +1381,12 @@ emission; absent only on the approval-event emission, where there is
 no prior state.<a href="#section-4-4.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-4.5">
-          <p id="section-4-4.5.1"><code>version</code> (integer, required): the new Mission record version, as
-reported by Mission Status
-(<span>[<a href="#I-D.draft-mcguinness-oauth-mission-status" class="cite xref">I-D.draft-mcguinness-oauth-mission-status</a>]</span>), letting a consumer
-order events and detect gaps.<a href="#section-4-4.5.1" class="pilcrow">¶</a></p>
+          <p id="section-4-4.5.1"><code>version</code> (integer, required): a strictly monotonic per-Mission
+counter the Mission Issuer maintains and increments on each committed
+lifecycle transition (the approval-event emission is version 1),
+letting a consumer order events and detect gaps. This profile defines
+the counter here; it is not surfaced by the issuance or status
+profiles.<a href="#section-4-4.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-4-4.6">
           <p id="section-4-4.6.1"><code>committed_at</code> (string, required): an RFC 3339 <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span> date-time
@@ -1400,10 +1409,11 @@ cross-substrate deployments that do.<a href="#section-4-4.7.1" class="pilcrow">�
   "iss": "https://as.example.com",
   "aud": "https://erp.example.com",
   "iat": 1797843200,
+  "exp": 1797843500,
   "jti": "set_9Kp2vN7sR1tY8mZ3qX5b",
   "events": {
     "https://schemas.karlmcguinness.com/secevent/mission/lifecycle-change": {
-      "mission": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+      "mission_id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
       "mission_origin": "https://as.example.com",
       "prior_state": "active",
       "state": "revoked",
@@ -1427,11 +1437,16 @@ with a Mission Issuer key resolvable in the issuer's <code>jwks_uri</code>, with
 <code>typ</code> of <code>secevent+jwt</code> and a <code>kid</code> identifying the signing key. A
 consumer <span class="bcp14">MUST</span> verify the signature against the Mission Issuer's
 published keys and <span class="bcp14">MUST</span> refuse a SET whose <code>iss</code> does not match the
-Mission Issuer it registered with.<a href="#section-5-1" class="pilcrow">¶</a></p>
+Mission Issuer it registered with. Because this profile is
+single-issuer, the SET <code>iss</code> equals the event's <code>mission_origin</code>; a
+consumer <span class="bcp14">MAY</span> treat a mismatch as a verification failure. (<code>mission_origin</code>
+is carried in the event for cross-substrate deployments where the two
+can differ.)<a href="#section-5-1" class="pilcrow">¶</a></p>
 <p id="section-5-2">The SET <code>aud</code> <span class="bcp14">MUST</span> be the receiving consumer's registered audience
 identifier; a consumer <span class="bcp14">MUST</span> refuse a SET whose <code>aud</code> is not its own.
-A consumer <span class="bcp14">MUST</span> treat <code>jti</code> as a one-time identifier within the SET's
-freshness window and reject a replayed <code>jti</code>.<a href="#section-5-2" class="pilcrow">¶</a></p>
+Each SET carries an <code>exp</code>; a consumer <span class="bcp14">MUST</span> reject an expired SET and
+<span class="bcp14">MUST</span> treat <code>jti</code> as a one-time identifier for at least the SET's
+validity window (<code>iat</code> to <code>exp</code>), rejecting a replayed <code>jti</code> within it.<a href="#section-5-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="consumer-behavior">
@@ -1450,12 +1465,19 @@ to derive further authority from, tokens bound to that Mission
 consumer's enforcement role.<a href="#section-6-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-6-2.2">
-          <p id="section-6-2.2.1">Apply the transition idempotently: a repeated or out-of-order event
-carrying a <code>version</code> not greater than the last applied for that
-<code>mission</code> <span class="bcp14">MUST NOT</span> regress the consumer's view of the state.<a href="#section-6-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-6-2.2.1">Resume honoring the Mission on a verified event whose <code>state</code> is
+<code>active</code> and whose <code>version</code> is greater than the last applied for
+that <code>mission_id</code>, subject to the same gating the issuance profile
+applies. This covers a reversible transition (for example a
+<code>suspended</code> Mission that is later resumed to <code>active</code>).<a href="#section-6-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-6-2.3">
-          <p id="section-6-2.3.1">Acknowledge the event per the SSF delivery mode in use.<a href="#section-6-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-6-2.3.1">Apply the transition idempotently: a repeated or out-of-order event
+carrying a <code>version</code> not greater than the last applied for that
+<code>mission_id</code> <span class="bcp14">MUST NOT</span> regress the consumer's view of the state.<a href="#section-6-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-2.4">
+          <p id="section-6-2.4.1">Acknowledge the event per the SSF delivery method in use.<a href="#section-6-2.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-6-3">A consumer <span class="bcp14">MUST NOT</span> treat the event as authority to change Mission
@@ -1481,8 +1503,9 @@ revocation-propagation guidance points to
 offers it emits <code>mission.lifecycle-change</code> events (<a href="#lifecycle-event" class="auto internal xref">Section 4</a>)
 over the stream (<a href="#event-stream" class="auto internal xref">Section 3</a>), and consumers subscribe and apply
 <a href="#consumer-behavior" class="auto internal xref">Section 6</a>. A deployment that offers event-driven
-propagation <span class="bcp14">MUST</span> advertise <code>mission_event_stream_endpoint</code> and at least
-one delivery mode (<a href="#as-metadata" class="auto internal xref">Section 8</a>), so consumers discover it.<a href="#section-7-1" class="pilcrow">¶</a></p>
+propagation <span class="bcp14">MUST</span> advertise <code>mission_event_stream_endpoint</code>
+(<a href="#as-metadata" class="auto internal xref">Section 8</a>) and support at least one SSF delivery method
+(<a href="#event-stream" class="auto internal xref">Section 3</a>), so consumers discover it.<a href="#section-7-1" class="pilcrow">¶</a></p>
 <p id="section-7-2">This document neither requires nor presumes event-driven propagation;
 a Mission Issuer <span class="bcp14">MAY</span> emit lifecycle events for audit or operational
 purposes independent of any consumer's enforcement posture.<a href="#section-7-2" class="pilcrow">¶</a></p>
@@ -1502,14 +1525,10 @@ issuance-profile and Status-profile members it already publishes:<a href="#secti
         <dd style="margin-left: 1.5em" id="section-8-2.2">
           <p id="section-8-2.2.1"><span class="bcp14">OPTIONAL</span>. A string containing a URL. The Shared Signals Framework
 <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span> stream endpoint for Mission lifecycle events
-(<a href="#event-stream" class="auto internal xref">Section 3</a>). Present when the Mission Issuer emits events.<a href="#section-8-2.2.1" class="pilcrow">¶</a></p>
-</dd>
-        <dd class="break"></dd>
-<dt id="section-8-2.3">
-<code>mission_event_delivery_modes_supported</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-8-2.4">
-          <p id="section-8-2.4.1"><span class="bcp14">OPTIONAL</span>. An array of strings. The delivery modes the stream
-supports, each one of <code>ssf_push</code>, <code>ssf_poll</code> (<a href="#event-stream" class="auto internal xref">Section 3</a>).<a href="#section-8-2.4.1" class="pilcrow">¶</a></p>
+(<a href="#event-stream" class="auto internal xref">Section 3</a>). Present when the Mission Issuer emits events. The
+supported delivery methods are discovered from the SSF stream
+configuration's <code>delivery_methods_supported</code>, not from a separate
+metadata member.<a href="#section-8-2.2.1" class="pilcrow">¶</a></p>
 </dd>
       <dd class="break"></dd>
 </dl>
@@ -1588,9 +1607,9 @@ surfaces with the privacy posture of
 <li class="normal" id="section-11-2.1">
           <p id="section-11-2.1.1">as a <strong>Mission Issuer</strong>, emits a signed <code>mission.lifecycle-change</code>
 SET (<a href="#lifecycle-event" class="auto internal xref">Section 4</a>, <a href="#set-protection" class="auto internal xref">Section 5</a>) on every committed
-Mission lifecycle transition, supports at least one delivery mode
-(<a href="#event-stream" class="auto internal xref">Section 3</a>), and advertises <code>mission_event_stream_endpoint</code>
-and <code>mission_event_delivery_modes_supported</code> (<a href="#as-metadata" class="auto internal xref">Section 8</a>);<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
+Mission lifecycle transition, supports at least one SSF delivery
+method (<a href="#event-stream" class="auto internal xref">Section 3</a>), and advertises
+<code>mission_event_stream_endpoint</code> (<a href="#as-metadata" class="auto internal xref">Section 8</a>);<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-11-2.2">
           <p id="section-11-2.2.1">as a <strong>consumer</strong>, verifies and applies received events per
@@ -1618,19 +1637,24 @@ the author-controlled <code>schemas.karlmcguinness.com/secevent</code> namespace
 <li class="normal" id="section-12.1-2.1">
             <p id="section-12.1-2.1.1"><code>https://schemas.karlmcguinness.com/secevent/mission/lifecycle-change</code>:
 emitted on any Mission lifecycle transition or the approval-event
-emission from a Mission Issuer. Required claims: <code>mission</code>,
+emission from a Mission Issuer. Required claims: <code>mission_id</code>,
 <code>mission_origin</code>, <code>state</code>, <code>version</code>, <code>committed_at</code>. Conditional
 claim: <code>prior_state</code> (required on transition emissions, absent on the
 approval-event emission). Optional claims: <code>tenant</code>, <code>reason</code>. See
 <a href="#lifecycle-event" class="auto internal xref">Section 4</a> for the schema.<a href="#section-12.1-2.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-12.1-3">This event type follows the OpenID Shared Signals Framework <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span>
-SET shape and the Continuous Access Evaluation Profile <span>[<a href="#OIDC-CAEP" class="cite xref">OIDC-CAEP</a>]</span>
-event conventions. The same event type is referenced by the
-substrate-neutral Mission Authority Server work; the two specifications
-are intended to register a single, shared definition, and their IANA
-registrations reconcile when both advance.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
+<p id="section-12.1-3">This event type uses the OpenID Shared Signals Framework <span>[<a href="#OIDC-SSF" class="cite xref">OIDC-SSF</a>]</span>
+SET shape. The same event type URI is also referenced by the
+substrate-neutral Mission Authority Server work, which makes <code>tenant</code> a
+required claim; this profile makes <code>tenant</code> <span class="bcp14">OPTIONAL</span> because the OAuth
+profile has no tenant model. Two rules keep the shared URI safe
+regardless of how the registrations reconcile: a consumer <span class="bcp14">MUST</span> ignore
+members it does not understand and <span class="bcp14">MUST NOT</span> reject an event solely for
+a missing <span class="bcp14">OPTIONAL</span> member (notably <code>tenant</code>); and the required-claim
+set of the shared URI is the intersection of the registrations, so a
+shared definition cannot make <code>tenant</code> required without breaking this
+profile's emitters.<a href="#section-12.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="oauth-authorization-server-metadata-registration">
@@ -1644,9 +1668,6 @@ IETF; Reference this document, <a href="#as-metadata" class="auto internal xref"
 <ul class="normal">
 <li class="normal" id="section-12.2-2.1">
             <p id="section-12.2-2.1.1"><code>mission_event_stream_endpoint</code><a href="#section-12.2-2.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-12.2-2.2">
-            <p id="section-12.2-2.2.1"><code>mission_event_delivery_modes_supported</code><a href="#section-12.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
@@ -1688,10 +1709,6 @@ IETF; Reference this document, <a href="#as-metadata" class="auto internal xref"
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC8259">[RFC8259]</dt>
-        <dd>
-<span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8259">https://www.rfc-editor.org/rfc/rfc8259</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC8414">[RFC8414]</dt>
         <dd>
 <span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Sakimura, N.</span>, and <span class="refAuthor">J. Bradley</span>, <span class="refTitle">"OAuth 2.0 Authorization Server Metadata"</span>, <span class="seriesInfo">RFC 8414</span>, <span class="seriesInfo">DOI 10.17487/RFC8414</span>, <time datetime="2018-06" class="refDate">June 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8414">https://www.rfc-editor.org/rfc/rfc8414</a>&gt;</span>. </dd>
@@ -1699,10 +1716,6 @@ IETF; Reference this document, <a href="#as-metadata" class="auto internal xref"
 <dt id="RFC8417">[RFC8417]</dt>
         <dd>
 <span class="refAuthor">Hunt, P., Ed.</span>, <span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Denniss, W.</span>, and <span class="refAuthor">M. Ansari</span>, <span class="refTitle">"Security Event Token (SET)"</span>, <span class="seriesInfo">RFC 8417</span>, <span class="seriesInfo">DOI 10.17487/RFC8417</span>, <time datetime="2018-07" class="refDate">July 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8417">https://www.rfc-editor.org/rfc/rfc8417</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC8705">[RFC8705]</dt>
-        <dd>
-<span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Sakimura, N.</span>, and <span class="refAuthor">T. Lodderstedt</span>, <span class="refTitle">"OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens"</span>, <span class="seriesInfo">RFC 8705</span>, <span class="seriesInfo">DOI 10.17487/RFC8705</span>, <time datetime="2020-02" class="refDate">February 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8705">https://www.rfc-editor.org/rfc/rfc8705</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8935">[RFC8935]</dt>
         <dd>
@@ -1712,9 +1725,9 @@ IETF; Reference this document, <a href="#as-metadata" class="auto internal xref"
         <dd>
 <span class="refAuthor">Backman, A., Ed.</span>, <span class="refAuthor">Jones, M., Ed.</span>, <span class="refAuthor">Scurtescu, M.</span>, <span class="refAuthor">Ansari, M.</span>, and <span class="refAuthor">A. Nadalin</span>, <span class="refTitle">"Poll-Based Security Event Token (SET) Delivery Using HTTP"</span>, <span class="seriesInfo">RFC 8936</span>, <span class="seriesInfo">DOI 10.17487/RFC8936</span>, <time datetime="2020-11" class="refDate">November 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8936">https://www.rfc-editor.org/rfc/rfc8936</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC9449">[RFC9449]</dt>
+<dt id="RFC9325">[RFC9325]</dt>
       <dd>
-<span class="refAuthor">Fett, D.</span>, <span class="refAuthor">Campbell, B.</span>, <span class="refAuthor">Bradley, J.</span>, <span class="refAuthor">Lodderstedt, T.</span>, <span class="refAuthor">Jones, M.</span>, and <span class="refAuthor">D. Waite</span>, <span class="refTitle">"OAuth 2.0 Demonstrating Proof of Possession (DPoP)"</span>, <span class="seriesInfo">RFC 9449</span>, <span class="seriesInfo">DOI 10.17487/RFC9449</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9449">https://www.rfc-editor.org/rfc/rfc9449</a>&gt;</span>. </dd>
+<span class="refAuthor">Sheffer, Y.</span>, <span class="refAuthor">Saint-Andre, P.</span>, and <span class="refAuthor">T. Fossati</span>, <span class="refTitle">"Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)"</span>, <span class="seriesInfo">BCP 195</span>, <span class="seriesInfo">RFC 9325</span>, <span class="seriesInfo">DOI 10.17487/RFC9325</span>, <time datetime="2022-11" class="refDate">November 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9325">https://www.rfc-editor.org/rfc/rfc9325</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -1725,10 +1738,6 @@ IETF; Reference this document, <a href="#as-metadata" class="auto internal xref"
 <a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
-<dt id="I-D.draft-ietf-secevent-subject-identifiers">[I-D.draft-ietf-secevent-subject-identifiers]</dt>
-        <dd>
-<span class="refAuthor">Backman, A.</span>, <span class="refAuthor">Scurtescu, M.</span>, and <span class="refAuthor">P. Jain</span>, <span class="refTitle">"Subject Identifiers for Security Event Tokens"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-secevent-subject-identifiers-18</span>, <time datetime="2023-06-24" class="refDate">24 June 2023</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-secevent-subject-identifiers-18">https://datatracker.ietf.org/doc/html/draft-ietf-secevent-subject-identifiers-18</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="OIDC-CAEP">[OIDC-CAEP]</dt>
         <dd>
 <span class="refAuthor">OpenID Foundation</span>, <span class="refTitle">"OpenID Continuous Access Evaluation Profile 1.0"</span>, <time datetime="2025" class="refDate">2025</time>, <span>&lt;<a href="https://openid.net/specs/openid-caep-1_0.html">https://openid.net/specs/openid-caep-1_0.html</a>&gt;</span>. </dd>

@@ -205,7 +205,7 @@ Table of Contents
    (Section 4), which answers "is this token's authorization still
    good," the Status operation answers "what is the state of this
    Mission" keyed by the mission_id alone.  Any consumer holding a
-   mission_id -- including an auditor or a cross-domain Resource AS --
+   mission_id (including an auditor or a cross-domain Resource AS)
    resolves it without holding a token the AS issued.
 
    The Mission Issuer publishes its Mission Status endpoint URL in
@@ -270,8 +270,11 @@ Table of Contents
 
    On success the AS returns a JWS Compact Serialization [RFC7515]
    signed with a key published in the AS's jwks_uri.  The JWS header
-   carries typ of application/mission-status-response+jwt (registered in
-   Section 11) and a kid identifying the signing key.
+   carries typ of mission-status-response+jwt and a kid identifying the
+   signing key.  Per [RFC7515] Section 4.1.9 the typ header omits the
+   application/ prefix; the full media type application/mission-status-
+   response+jwt (registered in Section 11) is used as the HTTP Content-
+   Type.
 
    [RFC9701] signed introspection responses are scoped to token
    introspection and do not apply to a lookup keyed by mission_id; the
@@ -294,7 +297,7 @@ Table of Contents
    {
      "alg": "ES256",
      "kid": "sa-key-2026-q3",
-     "typ": "application/mission-status-response+jwt"
+     "typ": "mission-status-response+jwt"
    }
 
    Decoded JWS payload:
@@ -432,7 +435,12 @@ Table of Contents
    Terminal and suspended states return HTTP 200 with the signed Mission
    Status Response carrying state.  Hard errors (unauthorized,
    not_found, rate_limited, unavailable) return the matching HTTP status
-   with a JSON body:
+   with a JSON body.  Note the distinction between the two access
+   failures: unauthorized (401) means the request carried no valid
+   authentication, whereas a request that is authenticated but not
+   authorized for the referenced Mission returns not_found (404), never
+   401, so that an unauthorized reference is indistinguishable from an
+   unknown one (Section 3.6).  The error body is:
 
    HTTP/1.1 404 Not Found
    Content-Type: application/json
@@ -453,14 +461,14 @@ Table of Contents
 
 4.  Token Introspection Mission Projection
 
-   This section is OPTIONAL and is a thin delta over the token
-   introspection of [I-D.draft-mcguinness-oauth-mission]
-   (Section "Mission State via Token Introspection").  That section
-   already defines a mission member on the introspection response
-   carrying id, origin, authority_hash, and (from the Mission origin)
-   the lifecycle state, together with the caller-authorization,
-   minimization, and origin-only-reports-state rules.  This document
-   does not restate those rules.
+   This section is OPTIONAL and is a thin delta over the OAuth 2.0 Token
+   Introspection [RFC7662] projection of
+   [I-D.draft-mcguinness-oauth-mission] (Section "Mission State via
+   Token Introspection").  That section already defines a mission member
+   on the introspection response carrying id, origin, authority_hash,
+   and (from the Mission origin) the lifecycle state, together with the
+   caller-authorization, minimization, and origin-only-reports-state
+   rules.  This document does not restate those rules.
 
    This extension adds the following to that projection:
 
@@ -478,6 +486,9 @@ Table of Contents
       additionally carry expires_at, an [RFC8259] string giving the
       point until which the consumer MAY rely on the reported state
       without re-checking, governed by the caching rule of Section 3.5.
+      When expires_at is absent (for example a non-origin projection),
+      the consumer MUST NOT cache the reported state across requests and
+      re-checks per use or relies on the token's own lifetime.
 
    This projection and the dedicated Mission Status Response
    (Section 3.4) carry Mission facts in a mission object of the same
@@ -601,7 +612,13 @@ Table of Contents
    &nonce=nonce_8Y3vN0sM6tP1xR9bQ5
 
    Revoke success response: the AS returns the updated status as a
-   signed Mission Status Response (Section 3.4):
+   signed Mission Status Response (Section 3.4).  Because the Lifecycle
+   request carries no audience, the AS sets aud to the authenticated
+   requester and MAY omit authorization_details (a lifecycle
+   confirmation reports state, not audience-scoped authority); sub is
+   the authenticated requesting client, as for any Mission Status
+   Response, while the human actor behind the operation is recorded only
+   in the audit log.
 
    HTTP/1.1 200 OK
    Content-Type: application/mission-status-response+jwt
@@ -614,7 +631,7 @@ Table of Contents
    {
      "iss": "https://as.example.com",
      "aud": "https://erp.example.com",
-     "sub": "user_3p2q8mN1a0kV7tR",
+     "sub": "client_erp-recon-agent",
      "nonce": "nonce_8Y3vN0sM6tP1xR9bQ5",
      "iat": 1797843200,
      "exp": 1797843260,
@@ -805,8 +822,8 @@ Table of Contents
    The AS signs Mission Status and Lifecycle responses with a key from
    its jwks_uri.  The AS MUST retain the public JWK for every kid it has
    signed such a response under, indexed by kid, for at least the
-   Mission record retention period -- even after the key is rotated out
-   of the live jwks_uri -- so an archived application/mission-status-
+   Mission record retention period (even after the key is rotated out of
+   the live jwks_uri), so an archived application/mission-status-
    response+jwt remains verifiable for audit and dispute.  The AS MAY
    expose retired verification keys through a deployment-defined audit
    interface but MUST NOT serve them as active keys at jwks_uri.
@@ -835,10 +852,10 @@ Table of Contents
 
 9.2.  Status Audit Logging
 
-   The AS records Status and Lifecycle requests -- containing
-   mission_id, audience, caller, and timing -- in audit logs.
-   Deployments MUST treat these logs as PII sinks per the issuance
-   profile's privacy considerations.
+   The AS records Status and Lifecycle requests (containing mission_id,
+   audience, caller, and timing) in audit logs.  Deployments MUST treat
+   these logs as PII sinks per the issuance profile's privacy
+   considerations.
 
 10.  Conformance
 
@@ -975,6 +992,10 @@ Normative References
               (JWT) Profile for OAuth 2.0 Client Authentication and
               Authorization Grants", RFC 7523, DOI 10.17487/RFC7523, May
               2015, <https://www.rfc-editor.org/rfc/rfc7523>.
+
+   [RFC7662]  Richer, J., Ed., "OAuth 2.0 Token Introspection",
+              RFC 7662, DOI 10.17487/RFC7662, October 2015,
+              <https://www.rfc-editor.org/rfc/rfc7662>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,

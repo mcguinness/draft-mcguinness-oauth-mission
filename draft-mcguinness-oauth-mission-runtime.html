@@ -15,14 +15,14 @@ agent takes within a token's lifetime. This document specifies the
 companion runtime layer for deployments that claim runtime Mission
 enforcement. Within a declared enforcement scope, each consequential
 action is evaluated, before it executes, against the Mission the
-acting credential is bound to: the action and its parameters against
-the Mission's approved authority and constraints, the actor context
-from the delegation chain, and the Mission against its current state.
-It defines where enforcement  MUST  sit, how a permit is bound to
-concrete parameters to close the time-of-check to time-of-use gap, how
-carried consumption bounds (budget, call counts, duration) are
-metered, and the runtime evidence each consequential action  MUST 
-produce. 
+acting credential is bound to. The evaluation checks the action and its
+parameters against the Mission's approved authority and constraints,
+the actor context from the delegation chain, and the Mission against
+its current state. The document defines where enforcement  MUST  sit, how
+a permit is bound to concrete parameters to close the time-of-check to
+time-of-use gap, how carried consumption bounds (budget, call counts,
+duration) are metered, and the runtime evidence each consequential
+action  MUST  produce. 
     " name="description">
 <meta content="xml2rfc 3.34.0" name="generator">
 <meta content="oauth" name="keyword">
@@ -1107,14 +1107,14 @@ agent takes within a token's lifetime. This document specifies the
 companion runtime layer for deployments that claim runtime Mission
 enforcement. Within a declared enforcement scope, each consequential
 action is evaluated, before it executes, against the Mission the
-acting credential is bound to: the action and its parameters against
-the Mission's approved authority and constraints, the actor context
-from the delegation chain, and the Mission against its current state.
-It defines where enforcement <span class="bcp14">MUST</span> sit, how a permit is bound to
-concrete parameters to close the time-of-check to time-of-use gap, how
-carried consumption bounds (budget, call counts, duration) are
-metered, and the runtime evidence each consequential action <span class="bcp14">MUST</span>
-produce.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+acting credential is bound to. The evaluation checks the action and its
+parameters against the Mission's approved authority and constraints,
+the actor context from the delegation chain, and the Mission against
+its current state. The document defines where enforcement <span class="bcp14">MUST</span> sit, how
+a permit is bound to concrete parameters to close the time-of-check to
+time-of-use gap, how carried consumption bounds (budget, call counts,
+duration) are metered, and the runtime evidence each consequential
+action <span class="bcp14">MUST</span> produce.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1943,13 +1943,15 @@ the immediate actor.<a href="#section-5-3.4.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-3.5">
           <p id="section-5-3.5.1"><strong>Time.</strong> The PDP <span class="bcp14">MUST</span> refuse if the decision context indicates the
-token is expired or the requested action would execute outside the
-permit validity window. The issuance profile caps a derived token's
+token is expired. The issuance profile caps a derived token's
 <code>exp</code> at <code>mission_expiry</code>, so the <code>exp</code> check enforces the Mission's
 expiry transitively. The standard <code>mission</code> claim and introspection
 do not surface <code>mission_expiry</code>; where a Mission state source does
 expose it (or reports the Mission <code>expired</code>), the PDP <span class="bcp14">MUST</span> refuse on
-it independent of the token's own <code>exp</code>.<a href="#section-5-3.5.1" class="pilcrow">¶</a></p>
+it independent of the token's own <code>exp</code>. The PDP sets the permit's
+validity window from these inputs; that the action actually executes
+within that window is the executing PEP's reverification, not a
+decision input (<a href="#parameter-binding" class="auto internal xref">Section 6</a>).<a href="#section-5-3.5.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-5-3.6">
           <p id="section-5-3.6.1"><strong>State.</strong> The PDP <span class="bcp14">MUST</span> refuse unless the Mission is <code>active</code>
@@ -2134,8 +2136,8 @@ consequential action and <span class="bcp14">MUST</span> refuse when the remaini
 insufficient.<a href="#section-7-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.2">
-          <p id="section-7-2.2.1"><code>max_calls</code> (<code>[ { scope, count } ]</code>): the PDP increments an atomic
-counter for the named <code>scope</code> and <span class="bcp14">MUST</span> refuse a call past <code>count</code>.<a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
+          <p id="section-7-2.2.1"><code>max_calls</code> (<code>[ { call_class, count } ]</code>): the PDP increments an atomic
+counter for the named <code>call_class</code> and <span class="bcp14">MUST</span> refuse a call past <code>count</code>.<a href="#section-7-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.3">
           <p id="section-7-2.3.1"><code>max_duration</code> (an ISO 8601 duration, e.g. <code>PT8H</code>; the <code>duration</code>
@@ -2318,7 +2320,10 @@ and trusted for the refusal or decision path:<a href="#section-9.1-3" class="pil
 <ul class="normal">
 <li class="normal" id="section-9.1-4.1">
             <p id="section-9.1-4.1.1">the Mission reference (<code>mission.id</code>, <code>mission.origin</code>) and the
-<code>authority_hash</code> (and <code>intent_hash</code> when known) it operated under;<a href="#section-9.1-4.1.1" class="pilcrow">¶</a></p>
+<code>authority_hash</code> (and <code>intent_hash</code> when known: it is carried in
+neither the <code>mission</code> claim nor introspection, so it is available only
+to a PDP with direct Mission-record access, and most deployments
+record <code>authority_hash</code> alone) it operated under;<a href="#section-9.1-4.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-9.1-4.2">
             <p id="section-9.1-4.2.1">the token issuer and audience or protected-resource identifier when
@@ -2432,13 +2437,19 @@ present, and the <code>act</code> chain as an array ordered root to leaf.<a href
       </ul>
 <p id="section-10-4">The AuthZEN <code>subject</code> remains the principal the decision is requested
 for; the invoked capability is the <code>action</code> and the target resource is
-the <code>resource</code>. An evaluation request might look like:<a href="#section-10-4" class="pilcrow">¶</a></p>
+the <code>resource</code>. Note that AuthZEN's <code>resource.type</code> is a resource-kind
+identifier, not the issuance profile's <code>authorization_details</code> type
+(<span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>): the example uses a deployment
+resource kind (<code>mission_resource</code>), and a deployment that needs to
+convey the <code>mission_resource_access</code> type carries it in
+<code>resource.properties</code> or <code>context</code>. An evaluation request might look
+like:<a href="#section-10-4" class="pilcrow">¶</a></p>
 <div class="lang-json sourcecode" id="section-10-5">
 <pre>
 {
   "subject":  { "type": "user", "id": "user_3p2q8mN1a0kV7tR" },
   "action":   { "name": "journal-entries.write" },
-  "resource": { "type": "mission_resource_access",
+  "resource": { "type": "mission_resource",
                 "id": "https://erp.example.com" },
   "context": {
     "mission": {
@@ -2717,6 +2728,10 @@ consumes are registered by <span>[<a href="#I-D.draft-mcguinness-oauth-mission" 
         <dd>
 <span class="refAuthor">Jones, M.</span> and <span class="refAuthor">D. Hardt</span>, <span class="refTitle">"The OAuth 2.0 Authorization Framework: Bearer Token Usage"</span>, <span class="seriesInfo">RFC 6750</span>, <span class="seriesInfo">DOI 10.17487/RFC6750</span>, <time datetime="2012-10" class="refDate">October 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6750">https://www.rfc-editor.org/rfc/rfc6750</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="RFC7662">[RFC7662]</dt>
+        <dd>
+<span class="refAuthor">Richer, J., Ed.</span>, <span class="refTitle">"OAuth 2.0 Token Introspection"</span>, <span class="seriesInfo">RFC 7662</span>, <span class="seriesInfo">DOI 10.17487/RFC7662</span>, <time datetime="2015-10" class="refDate">October 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7662">https://www.rfc-editor.org/rfc/rfc7662</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC8174">[RFC8174]</dt>
         <dd>
 <span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
@@ -2747,12 +2762,8 @@ consumes are registered by <span>[<a href="#I-D.draft-mcguinness-oauth-mission" 
 <span class="refAuthor">OpenID Foundation</span>, <span class="refTitle">"OpenID AuthZEN Authorization API 1.0"</span>, <time datetime="2025" class="refDate">2025</time>, <span>&lt;<a href="https://openid.net/specs/authorization-api-1_0-final.html">https://openid.net/specs/authorization-api-1_0-final.html</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.draft-niyikiza-oauth-attenuating-agent-tokens">[I-D.draft-niyikiza-oauth-attenuating-agent-tokens]</dt>
-        <dd>
-<span class="refAuthor">Aimable, N.</span>, <span class="refTitle">"Attenuating Authorization Tokens for Agentic Delegation Chains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-niyikiza-oauth-attenuating-agent-tokens-01</span>, <time datetime="2026-06-15" class="refDate">15 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-niyikiza-oauth-attenuating-agent-tokens-01">https://datatracker.ietf.org/doc/html/draft-niyikiza-oauth-attenuating-agent-tokens-01</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC7662">[RFC7662]</dt>
       <dd>
-<span class="refAuthor">Richer, J., Ed.</span>, <span class="refTitle">"OAuth 2.0 Token Introspection"</span>, <span class="seriesInfo">RFC 7662</span>, <span class="seriesInfo">DOI 10.17487/RFC7662</span>, <time datetime="2015-10" class="refDate">October 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7662">https://www.rfc-editor.org/rfc/rfc7662</a>&gt;</span>. </dd>
+<span class="refAuthor">Aimable, N.</span>, <span class="refTitle">"Attenuating Authorization Tokens for Agentic Delegation Chains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-niyikiza-oauth-attenuating-agent-tokens-01</span>, <time datetime="2026-06-15" class="refDate">15 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-niyikiza-oauth-attenuating-agent-tokens-01">https://datatracker.ietf.org/doc/html/draft-niyikiza-oauth-attenuating-agent-tokens-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
