@@ -492,7 +492,7 @@ Table of Contents
       handling, and duration measurement when duration can be metered;
 
    *  the Mission state source, maximum staleness bound, and permit
-      lifetime bound used for each action class;
+      validity window used for each action class;
 
    *  how Resource policy is evaluated and composed with Mission
       authority, including local object authorization, tenant
