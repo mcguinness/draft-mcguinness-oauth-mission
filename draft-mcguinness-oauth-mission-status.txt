@@ -468,9 +468,9 @@ Table of Contents
       protected by TLS, as for token introspection generally
       ([I-D.draft-mcguinness-oauth-mission], Section "Mission State via
       Token Introspection").  Where the projection's integrity and
-      origin need to be verifiable independently of the transport -- for
+      origin need to be verifiable independently of the transport (for
       example when the response transits intermediaries or is retained
-      for audit -- the AS SHOULD return it as a [RFC9701]-signed
+      for audit), the AS SHOULD return it as a [RFC9701]-signed
       response, advertised through the standard
       introspection_signing_alg_values_supported metadata [RFC8414].
 
@@ -663,9 +663,9 @@ Table of Contents
    a separate posture list:
 
    *  consulting Mission state at each derivation event (the token
-      endpoint, refresh, Token Exchange) -- the issuance profile's
-      always-present baseline, which does not invalidate already-issued
-      self-contained tokens;
+      endpoint, refresh, Token Exchange), the issuance profile's always-
+      present baseline, which does not invalidate already-issued self-
+      contained tokens;
 
    *  token introspection (Section 4), which returns active: false for a
       token whose Mission state disallows use even before the token
