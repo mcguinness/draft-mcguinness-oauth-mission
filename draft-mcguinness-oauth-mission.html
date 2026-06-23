@@ -3286,10 +3286,10 @@ until they expire; a deployment requiring lower cutoff latency <span class="bcp1
 use short token lifetimes.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
 <p id="section-8.2-4">The stateless baseline needs no status surface: a token is a
 self-contained authorization and verification is stateless. A
-deployment <span class="bcp14">MAY</span> additionally offer by-token introspection
+deployment <span class="bcp14">MAY</span> additionally offer token introspection
 (<a href="#introspection" class="auto internal xref">Section 9</a>) so a Resource Server can observe Mission state
 per request and cut off a revoked Mission without waiting out the
-token lifetime. The canonical by-<code>mission_id</code> Mission Status surface
+token lifetime. The canonical Mission Status surface (keyed by <code>mission_id</code>)
 and signed status responses remain deferred to future work.<a href="#section-8.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -3395,14 +3395,14 @@ authorization as inactive.<a href="#section-9.2-2" class="pilcrow">¶</a></p>
 unless it holds the Mission, that is, unless it is the Mission
 <code>origin</code>. A Resource AS introspecting a local token it minted from an
 ID-JAG (<a href="#cross-domain" class="auto internal xref">Section 11</a>) knows the Mission state only as of ID-JAG
-validation and has no by-<code>mission_id</code> query to the origin (this
+validation and has no query to the origin keyed by <code>mission_id</code> (this
 document defines none); it <span class="bcp14">MUST</span> omit <code>mission.state</code> rather than
 report a stale value as current. <code>authority_hash</code>, when included, is
 the origin reporting its own commitment, not the introspecting party
 recomputing a subset (<a href="#consent-binding" class="auto internal xref">Section 14.1</a>).<a href="#section-9.3-1" class="pilcrow">¶</a></p>
-<p id="section-9.3-2">This is by-token introspection: it answers "is this token's
+<p id="section-9.3-2">This is token introspection: it answers "is this token's
 authorization still good," keyed by the token presented. The
-canonical by-<code>mission_id</code> Mission Status surface remains out of scope
+canonical Mission Status surface (keyed by <code>mission_id</code>) remains out of scope
 (<a href="#revocation" class="auto internal xref">Section 8.2</a>).<a href="#section-9.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -4140,7 +4140,7 @@ by the 300-second cap of <a href="#cross-domain" class="auto internal xref">Sect
 continue to seed new downstream tokens for long.
 The introspection of <a href="#introspection" class="auto internal xref">Section 9</a> closes the revocation gap only
 single-domain: it requires the introspecting AS to hold the Mission,
-and a Resource AS has no by-<code>mission_id</code> query to the origin, so short
+and a Resource AS has no query to the origin keyed by <code>mission_id</code>, so short
 downstream lifetimes remain the only cross-domain control. Deployments
 needing tighter cross-domain revocation must add a status or
 event-distribution mechanism, which this document defers.<a href="#section-14.6-1" class="pilcrow">¶</a></p>
