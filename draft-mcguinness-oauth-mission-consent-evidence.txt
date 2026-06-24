@@ -79,25 +79,26 @@ Table of Contents
    4.  Consent Disclosure Object
      4.1.  Material Notice Requirements
    5.  consent_rendering_hash
-   6.  Consent Evidence Object
-     6.1.  Integrity and Verification
-   7.  Binding to Mission Approval
-     7.1.  Declined Approval Events
-     7.2.  Expansion and Delta Disclosure
-   8.  Audit Reconstruction
-     8.1.  Minimization and Redaction
-   9.  Conformance
-   10. Security Considerations
-     10.1.  Rendering Confusion
-     10.2.  Template Downgrade
-     10.3.  Evidence Does Not Grant Authority
-     10.4.  Decline Suppression
-     10.5.  Incomplete Material Notices
-   11. Privacy Considerations
-   12. IANA Considerations
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   6.  Rendering Assurance
+   7.  Consent Evidence Object
+     7.1.  Integrity and Verification
+   8.  Binding to Mission Approval
+     8.1.  Declined Approval Events
+     8.2.  Expansion and Delta Disclosure
+   9.  Audit Reconstruction
+     9.1.  Minimization and Redaction
+   10. Conformance
+   11. Security Considerations
+     11.1.  Rendering Confusion
+     11.2.  Template Downgrade
+     11.3.  Evidence Does Not Grant Authority
+     11.4.  Decline Suppression
+     11.5.  Incomplete Material Notices
+   12. Privacy Considerations
+   13. IANA Considerations
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -132,6 +133,15 @@ Table of Contents
    between the recorded disclosure and the enforced authority becomes
    detectable in audit.
 
+   How much a deployment can narrow the rendering gap is not all-or-
+   nothing.  This profile defines a ladder of rendering assurance
+   (Section 6) whose rungs move the trust from an unbounded,
+   unverifiable rendering layer toward the Approver's own authenticator
+   signing the exact disclosure commitment.  No rung proves what pixels
+   a human perceived, but the higher rungs shrink the trusted rendering
+   base to a small, attestable one and let the deployment pick the
+   assurance its threat model needs.
+
    Consent Evidence does not grant authority.  Authority remains the
    approved Mission and its Authority Set under
    [I-D.draft-mcguinness-oauth-mission].  Consent Evidence lets auditors
@@ -146,15 +156,15 @@ Table of Contents
 
    *  the consent_rendering_hash commitment (Section 5);
 
-   *  the Consent Evidence object (Section 6);
+   *  the Consent Evidence object (Section 7);
 
    *  binding rules for initial Mission approval and expansion approval
-      (Section 7);
+      (Section 8);
 
-   *  retention and audit reconstruction requirements (Section 8); and
+   *  retention and audit reconstruction requirements (Section 9); and
 
    *  conformance for a Consent-Evidence-capable Mission Issuer
-      (Section 9).
+      (Section 10).
 
    This document does not define user-interface layout, a legal consent
    standard, or any new OAuth grant.  It does not change the Authority
@@ -251,7 +261,7 @@ Table of Contents
    source_hashes:  REQUIRED.  An object containing the intent_hash and
       authority_hash values the disclosure corresponds to.  The
       disclosure object carries these two hashes rather than the full
-      mission container (Section 6) because it is constructed before
+      mission container (Section 7) because it is constructed before
       approval commits the Mission: the Mission id and lifecycle do not
       yet exist, and the disclosure must commit only to the proposed
       Intent and Authority Set it actually renders.  The Consent
@@ -334,6 +344,19 @@ Table of Contents
    A deployment MAY additionally retain screenshots or UI telemetry, but
    the interoperable commitment is the structured disclosure object.
 
+   So that the committed object can be related to what a human would
+   see, the rendering SHOULD be a deterministic function of the
+   disclosure object and its template_id, template_version, and locale:
+   the same inputs MUST produce the same rendered form, and the named
+   template MUST be retrievable or reconstructable by an authorized
+   auditor for the retention period (Section 9).  An auditor can then
+   re-render the recorded disclosure into the form the Approver should
+   have been shown.  This does not prove what was displayed, but it
+   reduces the gap from "the rendering layer showed something
+   unverifiable" to "did the rendering layer execute a published
+   deterministic template," which the higher rungs of Section 6 then
+   address.
+
    The Mission Issuer SHOULD record consent_rendering_hash on the
    Mission record.  When the Mission claim is extended to carry the
    value, it MUST carry the same prefixed integrity-anchor form, and
@@ -346,7 +369,66 @@ Table of Contents
    disclosure and construct a new one; it MUST NOT reuse the prior
    consent_rendering_hash.
 
-6.  Consent Evidence Object
+6.  Rendering Assurance
+
+   The commitment of Section 5 records what disclosure the Authorization
+   Server says it rendered; it cannot by itself prove what a human
+   perceived.  This is the what-you-see-is-what-you-sign problem.  This
+   profile does not close it with a server-side commitment, which is
+   impossible, but defines a ladder a deployment climbs as far as its
+   threat model requires.  Each rung shrinks the trusted rendering base;
+   to claim a rung a deployment satisfies it and records the
+   corresponding evidence.
+
+   Rung 0, Recorded disclosure:  The baseline of Section 5: the
+      structured disclosure is committed and bound to the Mission
+      anchors.  Proves the AS recorded this disclosure for this
+      authority; proves nothing about what was shown.
+
+   Rung 1, Deterministic rendering:  The rendering is a deterministic
+      function of the disclosure object and its committed template
+      (Section 5), so an auditor can re-render the intended form.  The
+      open question narrows to whether the rendering layer faithfully
+      executed a published template.
+
+   Rung 2, Attested rendering:  The Consent Evidence carries a
+      rendering_attestation (Section 7): evidence that an attested,
+      identified rendering component (a first-party AS-hosted consent
+      surface, or a renderer attested by the platform or a trusted
+      execution environment) produced the rendering.  The trusted base
+      shrinks from any rendering layer to an attested one.
+
+   Rung 3, Approver confirmation:  The Consent Evidence carries a
+      rendering_confirmation (Section 7): a signature produced by the
+      Approver's authenticator over the consent_rendering_hash at
+      approval, binding the approval credential itself to the exact
+      committed disclosure.  The claim that the Approver approved this
+      disclosure then rests on the Approver's authenticator, not on the
+      Authorization Server.  This is the what-you-see-is-what-you-sign
+      rung, as in authenticator transaction-confirmation schemes.  A
+      deployment SHOULD reach this rung for a Mission whose Authority
+      Set carries a high-risk material-notice class (Section 4.1):
+      irreversible actions, external commitments, privileged
+      administration, or cross-domain disclosure.
+
+   Rung 4, Out-of-band confirmation:  For the most material actions,
+      confirmation is obtained at execution time on a channel the
+      rendering layer does not control, as the action-bound approval of
+      the runtime layer ([I-D.draft-mcguinness-oauth-mission-runtime]);
+      a rendering layer would then have to compromise two independent
+      paths.  That is a runtime-layer mechanism recorded as its own
+      evidence; this profile records the approval-time rungs above.
+
+   No rung proves the Approver perceived or understood the disclosure; a
+   compromised authenticator or trusted execution environment, or an
+   Approver who confirms without reading, remains outside reach, as for
+   any electronic-signature scheme.  What the ladder provides is a
+   verifiable, bounded reduction of the rendering trust base: at Rung 3
+   the claim that the Approver approved a specific disclosure is
+   verifiable up to trust in the Approver's authenticator, rather than
+   in an arbitrary rendering layer.
+
+7.  Consent Evidence Object
 
    A Consent Evidence object has these members:
 
@@ -358,7 +440,7 @@ Table of Contents
       When decision is approved, it contains id, origin, intent_hash,
       authority_hash, and, when this profile records it on the Mission,
       consent_rendering_hash. - When decision is declined, no Mission
-      was created (Section 7.1), so there is no id.  It instead contains
+      was created (Section 8.1), so there is no id.  It instead contains
       origin and the intent_hash and authority_hash the disclosure
       corresponded to, matching the disclosure object's source_hashes
       (Section 4).  It MUST NOT contain id.
@@ -384,6 +466,26 @@ Table of Contents
 
    disclosure:  REQUIRED.  The Consent Disclosure object, or an object
       containing a durable reference and the consent_rendering_hash.
+
+   rendering_attestation:  OPTIONAL.  An object.  Evidence that an
+      attested, identified rendering component produced the rendering
+      shown to the Approver (Rung 2, Section 6).  Its members are
+      deployment-defined and identify the attested component and its
+      attestation; this profile fixes the role, not the attestation
+      format.
+
+   rendering_confirmation:  OPTIONAL.  An object.  A confirmation
+      produced by the Approver's authenticator over the
+      consent_rendering_hash at approval (Rung 3, Section 6), binding
+      the approval credential to the exact committed disclosure.  It
+      carries the signature and the material a verifier needs to check
+      it against the Approver's authenticator and the
+      consent_rendering_hash; this profile fixes that it signs the
+      commitment, not the authenticator protocol.  A deployment SHOULD
+      include it for a high-risk material-notice class (Section 4.1).
+      When present, a verifier MUST check it as part of Section 7.1 and
+      MUST treat a confirmation that does not verify against the
+      consent_rendering_hash as an integrity failure.
 
    approved_at:  REQUIRED when decision is approved.  An RFC 3339
       [RFC3339] timestamp.
@@ -445,7 +547,7 @@ Table of Contents
      }
    }
 
-6.1.  Integrity and Verification
+7.1.  Integrity and Verification
 
    When evidence_envelope.format is jws-compact, the protected header
    MUST identify a signing key controlled by the Mission Issuer or an
@@ -462,26 +564,33 @@ Table of Contents
 
    5.  when decision is approved, verifies that the Mission anchors in
        mission match the Mission record being audited.  When decision is
-       declined there is no Mission record (Section 7.1); the verifier
+       declined there is no Mission record (Section 8.1); the verifier
        instead confirms the mission descriptor carries origin and the
-       two source_hashes anchors and no id.
+       two source_hashes anchors and no id; and
+
+   6.  when rendering_confirmation is present (Section 6), verifies it
+       against the Approver's authenticator and the
+       consent_rendering_hash, and treats a confirmation that does not
+       verify as an integrity failure.  Its absence is not a failure; it
+       means the evidence asserts no rung above the rendering the AS
+       recorded.
 
    Steps 1 through 5 establish the integrity of the evidence record
    itself and rely only on the record, since consent_rendering_hash is
    carried inside the signed mission.  Reconstructing the disclosure is
    a separate step that depends on retrieval: when the disclosure object
    is inlined, a verifier recomputes consent_rendering_hash over it and
-   compares; when it is carried by reference (Section 8.1), the verifier
+   compares; when it is carried by reference (Section 9.1), the verifier
    retrieves it and verifies it against consent_rendering_hash.  A
    verifier MUST NOT treat a disclosure that is merely unretrievable as
    an integrity failure of the evidence record; failure to retrieve a
    referenced disclosure within the retention window is an audit failure
-   (Section 8), not a signature or anchor failure.
+   (Section 9), not a signature or anchor failure.
 
    Evidence whose envelope format is unsupported MUST be rejected rather
    than accepted without verification.
 
-7.  Binding to Mission Approval
+8.  Binding to Mission Approval
 
    At an approval event, a Consent-Evidence-capable Mission Issuer MUST:
 
@@ -504,7 +613,7 @@ Table of Contents
    Mission and distinguish retained authority from newly requested
    authority.
 
-7.1.  Declined Approval Events
+8.1.  Declined Approval Events
 
    Declined approval events are security-relevant.  A deployment
    claiming this profile MUST record Consent Evidence when an Approver
@@ -516,7 +625,7 @@ Table of Contents
    authority.  It exists to prevent silent retry, coercion, and
    rendering confusion from being invisible to audit.
 
-7.2.  Expansion and Delta Disclosure
+8.2.  Expansion and Delta Disclosure
 
    When the approval event is for Mission Expansion, the Consent
    Disclosure object MUST distinguish:
@@ -537,7 +646,7 @@ Table of Contents
    without the delta is not conforming to this profile, because it fails
    to show what is being widened.
 
-8.  Audit Reconstruction
+9.  Audit Reconstruction
 
    A deployment claiming this profile MUST retain enough information for
    an authorized auditor to reconstruct:
@@ -556,7 +665,7 @@ Table of Contents
 
    Retention MUST last at least as long as the Mission's audit horizon.
 
-8.1.  Minimization and Redaction
+9.1.  Minimization and Redaction
 
    The portable Consent Evidence object MAY contain a durable reference
    to the full Consent Disclosure object rather than the full object
@@ -568,7 +677,7 @@ Table of Contents
    Free-form task text and approver comments SHOULD be redacted or
    stored by reference when not required for ordinary audit.
 
-9.  Conformance
+10.  Conformance
 
    A conforming Consent-Evidence-capable Mission Issuer MUST:
 
@@ -585,12 +694,12 @@ Table of Contents
    *  retain evidence for audit reconstruction.
 
    A conforming verifier of Consent Evidence MUST implement the checks
-   in Section 6.1 and MUST treat failure to retrieve a referenced
+   in Section 7.1 and MUST treat failure to retrieve a referenced
    disclosure during the retention window as an audit failure.
 
-10.  Security Considerations
+11.  Security Considerations
 
-10.1.  Rendering Confusion
+11.1.  Rendering Confusion
 
    The primary threat is rendering confusion: the Approver sees one
    thing while the Mission records another.  This profile mitigates that
@@ -599,38 +708,45 @@ Table of Contents
    Authority Set is detectable in audit.  It does not eliminate the
    threat: a rendering layer that displays pixels inconsistent with the
    structured disclosure it commits remains outside any server-side
-   commitment (Section 1).  Deployments that need assurance about the
-   presented pixels MUST obtain it by other means, such as a trusted
-   rendering path or client attestation.
+   commitment (Section 1).  The assurance ladder of Section 6 is how a
+   deployment reduces this threat by degree: deterministic rendering
+   makes the intended form re-renderable (Rung 1), a rendering
+   attestation binds an attested renderer (Rung 2), and an Approver
+   confirmation signature over the consent_rendering_hash (Rung 3) moves
+   the trust from the rendering layer to the Approver's authenticator.
+   A deployment that needs assurance that the Approver approved a
+   specific disclosure SHOULD reach Rung 3 for its high-risk classes; no
+   rung proves perception, which remains outside reach for any
+   electronic-signature scheme.
 
-10.2.  Template Downgrade
+11.2.  Template Downgrade
 
    An attacker could use an outdated or less explicit template.  The
    Consent Disclosure object includes template_id and template_version;
    deployments SHOULD reject templates not approved for the action
    classes being authorized.
 
-10.3.  Evidence Does Not Grant Authority
+11.3.  Evidence Does Not Grant Authority
 
    Consent Evidence proves what was shown and decided.  It MUST NOT be
    accepted as a token, grant, or substitute for the Mission's
    authority_hash.
 
-10.4.  Decline Suppression
+11.4.  Decline Suppression
 
    An attacker could repeatedly reshape and resubmit a declined Mission
    to obtain approval through fatigue.  Recording declined events lets
    deployments detect repeated attempts against the same task,
    requester, or Authority Set.
 
-10.5.  Incomplete Material Notices
+11.5.  Incomplete Material Notices
 
    If material notices omit high-risk authority, the Approver's consent
    may not be meaningful.  Deployments SHOULD test disclosure templates
    against Authority Set fixtures and reject templates that cannot
    render all material notice classes.
 
-11.  Privacy Considerations
+12.  Privacy Considerations
 
    Consent Evidence can contain sensitive task descriptions, business
    context, approver identity, subject identity, and high-risk authority
@@ -639,7 +755,7 @@ Table of Contents
    records SHOULD carry hashes or references rather than full rendered
    text, while still allowing authorized audit reconstruction.
 
-12.  IANA Considerations
+13.  IANA Considerations
 
    This document makes no IANA request.
 
@@ -648,9 +764,9 @@ Table of Contents
    becomes an interoperability requirement.  Until such a registration
    exists, deployments using this media type do so by local agreement.
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [I-D.draft-mcguinness-oauth-mission]
               McGuinness, K., "Mission-Bound Authorization for OAuth
@@ -691,13 +807,20 @@ Table of Contents
               DOI 10.17487/RFC8785, June 2020,
               <https://www.rfc-editor.org/rfc/rfc8785>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-expansion]
               McGuinness, K., "Mission Expansion for OAuth 2.0", Work in
               Progress, Internet-Draft, draft-mcguinness-oauth-mission-
               expansion, 2026, <https://datatracker.ietf.org/doc/html/
               draft-mcguinness-oauth-mission-expansion>.
+
+   [I-D.draft-mcguinness-oauth-mission-runtime]
+              McGuinness, K., "Mission-Bound Runtime Enforcement for
+              OAuth 2.0", Work in Progress, Internet-Draft, draft-
+              mcguinness-oauth-mission-runtime, 2026,
+              <https://datatracker.ietf.org/doc/html/draft-mcguinness-
+              oauth-mission-runtime>.
 
    [I-D.draft-mcguinness-oauth-mission-shaping]
               McGuinness, K., "Mission Intent Shaping for OAuth 2.0",
