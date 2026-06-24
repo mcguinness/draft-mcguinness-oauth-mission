@@ -1670,14 +1670,30 @@ request, context, capability source, and shaping policy, and free-text
 <code>constraints</code> and <code>success_criteria</code> that describe the bounds the shaper
 can defend. The shaper should not include a broad resource class as a
 convenience fallback for unresolved detail.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
-<p id="section-6.1-2">When a deployment or caller supplies an authority ceiling, the proposal
+<p id="section-6.1-2">For an open-ended task whose concrete objects are not known when the
+proposal is built, the shaper should express the bound as <code>constraints</code>
+that hold as invariants over those objects (the owning customer, the
+tenant, an amount ceiling, read-only except named writes, a time
+window), rather than reaching for a broad resource class to anticipate
+them. The Authorization Server derives authority bounded by those
+constraints, and the runtime layer enforces them per object at the point
+of use; this keeps the proposal tight without enumerating objects the
+shaper cannot know yet (Mission Authority,
+<span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>).<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">A shaper should also propose a Mission Intent scoped to one concrete
+task, not to an agent's whole session or standing role. Where a request
+spans several distinct tasks, the shaper should propose several
+task-scoped Mission Intents rather than one broad proposal, so each
+resulting Mission stays narrow, separately approved, and separately
+revocable.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">When a deployment or caller supplies an authority ceiling, the proposal
 <span class="bcp14">MUST</span> be a subset of it. If the task cannot be completed within that
 ceiling, the shaper <span class="bcp14">MUST</span> request clarification or refuse; it <span class="bcp14">MUST NOT</span>
 silently drop necessary authority while emitting a proposal that appears
 complete, unless Shaping Evidence records the excluded authority and the
 outcome clearly indicates the proposal may not satisfy the task. The
 Mission Issuer remains responsible for enforcing its own ceiling even
-when no caller ceiling is present.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+when no caller ceiling is present.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="delegation">

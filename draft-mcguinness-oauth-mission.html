@@ -1594,6 +1594,14 @@ shared task. It is not intended for, and adds cost without benefit to,
 single-request user flows, machine-to-machine service credentials, or
 short-lived authorizations where the credential's lifetime is the
 task's lifetime; those use OAuth unchanged.<a href="#section-1.4-1" class="pilcrow">¶</a></p>
+<p id="section-1.4-2">A Mission <span class="bcp14">SHOULD</span> be scoped to a concrete task, not to an agent's whole
+lifetime. A deployment <span class="bcp14">SHOULD</span> prefer narrow, per-task Missions, each
+separately approved and revocable, over a single broad standing Mission
+that accumulates authority across unrelated tasks. The durable object is
+the approved task: keeping it task-scoped is what makes its authority
+and audit meaningful and bounds the blast radius on compromise to one
+task. An agent pursuing many tasks holds many Missions, not one broad
+one.<a href="#section-1.4-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="scope-and-future-work">
@@ -1651,12 +1659,16 @@ Verifying an agent's declared reasoning against the task is a further
 attestation problem outside both layers.<a href="#section-1.6-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.6-2.2">
-            <p id="section-1.6-2.2.1"><strong>Just-in-time Mission expansion.</strong> The Authority Set is committed at
-approval; this profile defines no mid-stream, incremental
-authorization upgrade. Widening requires a new approval (a successor
-Mission), as specified by Mission Expansion
-<span>[<a href="#I-D.draft-mcguinness-oauth-mission-expansion" class="cite xref">I-D.draft-mcguinness-oauth-mission-expansion</a>]</span>; a JIT, approval-free
-expansion protocol remains future work.<a href="#section-1.6-2.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.6-2.2.1"><strong>Approval-free authorization upgrade.</strong> The Authority Set is
+committed at approval; this profile defines no mid-stream widening
+that bypasses consent. Widening requires a new approval, a successor
+Mission, as specified by Mission Expansion
+<span>[<a href="#I-D.draft-mcguinness-oauth-mission-expansion" class="cite xref">I-D.draft-mcguinness-oauth-mission-expansion</a>]</span>. That approval <span class="bcp14">MAY</span> be
+given by policy rather than by a human when the original approval
+pre-consented to an authority ceiling and a drawdown policy
+(progressive authorization,
+<span>[<a href="#I-D.draft-mcguinness-oauth-mission-expansion" class="cite xref">I-D.draft-mcguinness-oauth-mission-expansion</a>]</span>); a widening that no
+consent, human or pre-given, authorizes remains out of scope.<a href="#section-1.6-2.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-1.6-2.3">
             <p id="section-1.6-2.3.1"><strong>Lifecycle event distribution.</strong> A Resource Server learns Mission
@@ -2207,19 +2219,31 @@ constrain what the AS <span class="bcp14">MAY</span> derive, never widen it.<a h
 profile fixes how the derived authority is committed, carried, and
 gated, not a portable derivation algorithm; the Mission's
 <code>policy_version</code> records which policy produced a given Authority Set.<a href="#section-5-4" class="pilcrow">¶</a></p>
-<p id="section-5-5">A <code>mission_resource_access</code> entry is a <span>[<a href="#RFC9396" class="cite xref">RFC9396</a>]</span>
-        <code>authorization_details</code> object with these members:<a href="#section-5-5" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-5-6">
-        <dt id="section-5-6.1">
+<p id="section-5-5">For an open-ended task whose concrete objects cannot be enumerated at
+approval (for example, "reconcile this customer's ledger," where the
+individual invoices are not yet known), the AS <span class="bcp14">SHOULD</span> bound the derived
+authority primarily by <code>constraints</code> that hold as invariants over those
+objects (the owning customer, the tenant, an amount ceiling, read-only
+except named write actions, a validity window) rather than by an
+exhaustive <code>resource</code> enumeration. The runtime layer
+(<a href="#runtime-boundary" class="auto internal xref">Section 15.3</a>) checks each concrete object against the
+constraint at the point of use. Constraint-bounding lets a Mission cover
+an open-ended task with tight authority even though the specific objects
+are unknown at approval, and avoids the over-broad enumeration a
+deployment would otherwise need to anticipate them.<a href="#section-5-5" class="pilcrow">¶</a></p>
+<p id="section-5-6">A <code>mission_resource_access</code> entry is a <span>[<a href="#RFC9396" class="cite xref">RFC9396</a>]</span>
+        <code>authorization_details</code> object with these members:<a href="#section-5-6" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5-7">
+        <dt id="section-5-7.1">
 <code>type</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-5-6.2">
-          <p id="section-5-6.2.1"><span class="bcp14">REQUIRED</span>. A string. <code>mission_resource_access</code>.<a href="#section-5-6.2.1" class="pilcrow">¶</a></p>
+        <dd style="margin-left: 1.5em" id="section-5-7.2">
+          <p id="section-5-7.2.1"><span class="bcp14">REQUIRED</span>. A string. <code>mission_resource_access</code>.<a href="#section-5-7.2.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-5-6.3">
+<dt id="section-5-7.3">
 <code>resource</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-5-6.4">
-          <p id="section-5-6.4.1"><span class="bcp14">REQUIRED</span>. A string. The single protected resource the
+        <dd style="margin-left: 1.5em" id="section-5-7.4">
+          <p id="section-5-7.4.1"><span class="bcp14">REQUIRED</span>. A string. The single protected resource the
 entry applies to, an absolute URI identifying an OAuth protected
 resource (<span>[<a href="#RFC8707" class="cite xref">RFC8707</a>]</span>) or a Protected Resource (<span>[<a href="#RFC9728" class="cite xref">RFC9728</a>]</span>). It is
 the same kind of identifier as the <span>[<a href="#RFC8707" class="cite xref">RFC8707</a>]</span> <code>resource</code> value, and
@@ -2231,72 +2255,72 @@ it per entry (rather than once for the request, as the <span>[<a href="#RFC8707"
 authority to distinct resources. Per <span>[<a href="#RFC9396" class="cite xref">RFC9396</a>]</span>, the <code>resource</code>
 request parameter does not affect how the AS processes
 <code>authorization_details</code>, and this member is distinct from the
-<span>[<a href="#RFC9396" class="cite xref">RFC9396</a>]</span> common <code>locations</code> field.<a href="#section-5-6.4.1" class="pilcrow">¶</a></p>
+<span>[<a href="#RFC9396" class="cite xref">RFC9396</a>]</span> common <code>locations</code> field.<a href="#section-5-7.4.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-5-6.5">
+<dt id="section-5-7.5">
 <code>actions</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-5-6.6">
-          <p id="section-5-6.6.1"><span class="bcp14">REQUIRED</span>. An array of strings. Permitted action
-identifiers, each matching <code>[A-Za-z0-9_.:-]+</code>.<a href="#section-5-6.6.1" class="pilcrow">¶</a></p>
+        <dd style="margin-left: 1.5em" id="section-5-7.6">
+          <p id="section-5-7.6.1"><span class="bcp14">REQUIRED</span>. An array of strings. Permitted action
+identifiers, each matching <code>[A-Za-z0-9_.:-]+</code>.<a href="#section-5-7.6.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-5-6.7">
+<dt id="section-5-7.7">
 <code>constraints</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-5-6.8">
-          <p id="section-5-6.8.1"><span class="bcp14">OPTIONAL</span>. An object. Machine-actionable per-resource
+        <dd style="margin-left: 1.5em" id="section-5-7.8">
+          <p id="section-5-7.8.1"><span class="bcp14">OPTIONAL</span>. An object. Machine-actionable per-resource
 bounds (for example, <code>max_amount_usd</code>). A member name registered as a
 Common Constraint (<a href="#common-constraints" class="auto internal xref">Section 5.2</a>) has shared semantics
-across deployments; any other name is deployment-defined.<a href="#section-5-6.8.1" class="pilcrow">¶</a></p>
+across deployments; any other name is deployment-defined.<a href="#section-5-7.8.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-5-6.8.2.1">
-              <p id="section-5-6.8.2.1.1">Because a <code>constraints</code> member narrows authority, a Resource Server
-that cannot enforce one <span class="bcp14">MUST</span> fail closed (<a href="#rs-enforcement" class="auto internal xref">Section 8.2</a>).<a href="#section-5-6.8.2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-5-7.8.2.1">
+              <p id="section-5-7.8.2.1.1">Because a <code>constraints</code> member narrows authority, a Resource Server
+that cannot enforce one <span class="bcp14">MUST</span> fail closed (<a href="#rs-enforcement" class="auto internal xref">Section 8.2</a>).<a href="#section-5-7.8.2.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li class="normal" id="section-5-6.8.2.2">
-              <p id="section-5-6.8.2.2.1">To avoid that failure mode, the AS <span class="bcp14">SHOULD</span> emit for a given
+            <li class="normal" id="section-5-7.8.2.2">
+              <p id="section-5-7.8.2.2.1">To avoid that failure mode, the AS <span class="bcp14">SHOULD</span> emit for a given
 <code>resource</code> only <code>constraints</code> keys that the Resource Server serving
 it is known (by registration or deployment policy) to understand
-and enforce.<a href="#section-5-6.8.2.2.1" class="pilcrow">¶</a></p>
+and enforce.<a href="#section-5-7.8.2.2.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
 </dd>
         <dd class="break"></dd>
-<dt id="section-5-6.9">
+<dt id="section-5-7.9">
 <code>delegation</code>:</dt>
-        <dd style="margin-left: 1.5em" id="section-5-6.10">
-          <p id="section-5-6.10.1"><span class="bcp14">OPTIONAL</span>. An object. The delegation policy for this
+        <dd style="margin-left: 1.5em" id="section-5-7.10">
+          <p id="section-5-7.10.1"><span class="bcp14">OPTIONAL</span>. An object. The delegation policy for this
 entry (<a href="#delegation-constraints" class="auto internal xref">Section 11.1</a>). When absent, this entry's
 authority is non-delegable: it <span class="bcp14">MUST NOT</span> appear in a delegated
-token. When present, it has these members:<a href="#section-5-6.10.1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-5-6.10.2">
-            <dt id="section-5-6.10.2.1">
+token. When present, it has these members:<a href="#section-5-7.10.1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5-7.10.2">
+            <dt id="section-5-7.10.2.1">
 <code>max_depth</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-5-6.10.2.2">
-              <p id="section-5-6.10.2.2.1"><span class="bcp14">REQUIRED</span>. An integer. The maximum delegation depth at
+            <dd style="margin-left: 1.5em" id="section-5-7.10.2.2">
+              <p id="section-5-7.10.2.2.1"><span class="bcp14">REQUIRED</span>. An integer. The maximum delegation depth at
 which this entry's authority may be exercised
-(<a href="#delegation-constraints" class="auto internal xref">Section 11.1</a>).<a href="#section-5-6.10.2.2.1" class="pilcrow">¶</a></p>
+(<a href="#delegation-constraints" class="auto internal xref">Section 11.1</a>).<a href="#section-5-7.10.2.2.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-5-6.10.2.3">
+<dt id="section-5-7.10.2.3">
 <code>allowed_delegates</code>:</dt>
-            <dd style="margin-left: 1.5em" id="section-5-6.10.2.4">
-              <p id="section-5-6.10.2.4.1"><span class="bcp14">OPTIONAL</span>. An array of objects. The permitted
+            <dd style="margin-left: 1.5em" id="section-5-7.10.2.4">
+              <p id="section-5-7.10.2.4.1"><span class="bcp14">OPTIONAL</span>. An array of objects. The permitted
 delegates, each a <code>may_act</code>-style matcher
 (<a href="#delegation-constraints" class="auto internal xref">Section 11.1</a>): <code>{ "sub": "&lt;client_id&gt;" }</code> for a
 specific delegate, or <code>{ "sub_profile": "&lt;actor-type&gt;" }</code> for an
 actor-type class. When absent, any actor is permitted (subject to
-<code>max_depth</code>).<a href="#section-5-6.10.2.4.1" class="pilcrow">¶</a></p>
+<code>max_depth</code>).<a href="#section-5-7.10.2.4.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
 </dd>
       <dd class="break"></dd>
 </dl>
-<p id="section-5-7">Example Authority Set (the read entry is delegable to depth 2; the
+<p id="section-5-8">Example Authority Set (the read entry is delegable to depth 2; the
 write entry carries no <code>delegation</code> and so is non-delegable, because
-<code>delegation</code> is per entry):<a href="#section-5-7" class="pilcrow">¶</a></p>
-<div class="lang-json sourcecode" id="section-5-8">
+<code>delegation</code> is per entry):<a href="#section-5-8" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-5-9">
 <pre>
 [
   { "type": "mission_resource_access",
@@ -2311,7 +2335,7 @@ write entry carries no <code>delegation</code> and so is non-delegable, because
     "actions": ["journal-entries.write"],
     "constraints": { "max_amount_usd": 500 } }
 ]
-</pre><a href="#section-5-8" class="pilcrow">¶</a>
+</pre><a href="#section-5-9" class="pilcrow">¶</a>
 </div>
 <div id="subset">
 <section id="section-5.1">
