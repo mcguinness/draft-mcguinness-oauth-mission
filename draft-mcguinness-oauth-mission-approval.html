@@ -1363,7 +1363,10 @@ completion_mode=deferred revisable
 <p id="section-6-3"><code>revisable</code> is a completion-mode value registered in the deferred
 substrate's OAuth Completion Mode Values registry (<a href="#iana" class="auto internal xref">Section 12</a>). It
 authorizes only the revision handshake defined here. A Mission Issuer
-<span class="bcp14">MUST NOT</span> invite a revision unless the client offered <code>revisable</code>.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<span class="bcp14">MUST NOT</span> invite a revision unless the client offered <code>revisable</code>.
+<code>revisable</code> has effect only together with <code>deferred</code>; a Mission Issuer
+that receives <code>revisable</code> without <code>deferred</code> <span class="bcp14">MUST</span> ignore it, because
+there is no deferred approval to revise.<a href="#section-6-3" class="pilcrow">¶</a></p>
 <div id="revision-required">
 <section id="section-6.1">
         <h3 id="name-the-revision-required-signa">

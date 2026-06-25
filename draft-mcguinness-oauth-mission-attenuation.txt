@@ -81,15 +81,16 @@ Table of Contents
    4.  Conventions and Terminology
    5.  Mission-Bound Attenuation Roots
    6.  Offline Attenuation
-   7.  The Kill Switch Requires Runtime Enforcement
-   8.  Relationship to Other Delegation
-   9.  Worked Example
-   10. Conformance
-   11. Security Considerations
-   12. IANA Considerations
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   7.  Verifying the Mission Binding
+   8.  The Kill Switch Requires Runtime Enforcement
+   9.  Relationship to Other Delegation
+   10. Worked Example
+   11. Conformance
+   12. Security Considerations
+   13. IANA Considerations
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -113,7 +114,7 @@ Table of Contents
    children for sub-agents with no Authorization Server contact.
 
    Three things make this safe within the Mission model, and this
-   document requires all three (Section 7): the child carries the parent
+   document requires all three (Section 8): the child carries the parent
    chain, so a consumer verifies the narrowing from the tokens it holds;
    the Mission kill switch is preserved because consumption is gated by
    the runtime enforcement layer re-checking current Mission state, not
@@ -204,7 +205,32 @@ Table of Contents
    cannot recompute from the narrowed leaf, exactly as for any narrowed
    Mission-bound token ([I-D.draft-mcguinness-oauth-mission]).
 
-7.  The Kill Switch Requires Runtime Enforcement
+7.  Verifying the Mission Binding
+
+   A consumer verifies the chain linkage, capability monotonicity,
+   depth, and proof-of-possession under the attenuation substrate
+   ([I-D.draft-niyikiza-oauth-attenuating-agent-tokens]).  This profile
+   adds checks on the mission claim, which the substrate does not define
+   because it has no concept of the Mission binding.  In addition to the
+   substrate's chain verification, a consumer MUST:
+
+   *  reject the chain unless every token in it carries a mission claim
+      and every claim carries the same id, origin, and authority_hash as
+      the root.  A child cannot re-bind to a different Mission or change
+      the lineage anchor; a link whose mission claim differs from the
+      root's, or that omits it, MUST cause the whole chain to be
+      refused, not treated as a narrower grant; and
+
+   *  treat a chain whose root carries no mission claim as outside this
+      profile: it is an ordinary attenuation chain with no Mission
+      binding, and a consumer MUST NOT apply the Mission-state kill
+      switch (Section 8) to it or report it as Mission-bound.
+
+   These checks fail safe: a chain that does not present a single,
+   unchanged Mission binding is refused, not evaluated against a guessed
+   Mission.
+
+8.  The Kill Switch Requires Runtime Enforcement
 
    The attenuation substrate defines no revocation: a child, once
    minted, is valid by its signature chain until its exp, and no issuer
@@ -227,7 +253,7 @@ Table of Contents
    is thus an enforced-tier capability; it is not available to a
    deployment that relies on token lifetime alone.
 
-8.  Relationship to Other Delegation
+9.  Relationship to Other Delegation
 
    Offline attenuation sits beside two existing mechanisms and is
    distinct from both:
@@ -249,7 +275,7 @@ Table of Contents
       needs a narrower token under the same Mission, fast, at fan-out
       scale.
 
-9.  Worked Example
+10.  Worked Example
 
    An orchestrator agent (s6BhdRkqt3), acting for alice under Mission
    msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- to reconcile Q3 invoices, holds
@@ -322,13 +348,13 @@ Table of Contents
    and capability monotonicity), verifies the proof-of-possession under
    the child's cnf key, and, because this is Mission-bound, checks that
    msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- is active within its staleness
-   bound (Section 7).  A write attempt by the extractor fails on
+   bound (Section 8).  A write attempt by the extractor fails on
    capability monotonicity: erp.journal-entries.write is not in its
    tools.  And when alice revokes the Mission, the next read fails the
    state check and the whole chain stops, even though no issuer ever saw
    the child and the child's exp has not passed.
 
-10.  Conformance
+11.  Conformance
 
    A Mission Issuer conforming to this profile MUST bound a Mission-
    bound attenuation root by the Mission's Authority Set and carry the
@@ -336,17 +362,17 @@ Table of Contents
    this profile MUST verify the attenuation chain and proof-of-
    possession per the attenuation substrate, MUST carry the mission
    claim unchanged across the chain, and MUST enforce current Mission
-   state per Section 7.  A deployment MUST NOT claim this profile on a
+   state per Section 8.  A deployment MUST NOT claim this profile on a
    path that does not enforce Mission state.
 
-11.  Security Considerations
+12.  Security Considerations
 
    The security considerations of the issuance profile, the runtime
    profile, and the attenuation substrate apply.  This profile adds:
 
    *  No native revocation.  Offline children cannot be recalled by the
       issuer; the kill switch is the runtime Mission-state check
-      (Section 7), which is mandatory for this profile.  A deployment
+      (Section 8), which is mandatory for this profile.  A deployment
       that cannot enforce Mission state MUST NOT accept these tokens.
 
    *  Stale authority.  A child's exp bounds its life absent a state
@@ -370,7 +396,7 @@ Table of Contents
       ([I-D.draft-mcguinness-oauth-mission-runtime]) is the audit record
       for offline-attenuated actions.
 
-12.  IANA Considerations
+13.  IANA Considerations
 
    This document makes no IANA request.  A Mission-bound attenuation
    root carries the mission claim, which the issuance profile registers
@@ -379,9 +405,9 @@ Table of Contents
    combines them by reference and defines no new claim, parameter, or
    registry.
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [I-D.draft-mcguinness-oauth-mission]
               McGuinness, K., "Mission-Bound Authorization for OAuth
@@ -418,7 +444,7 @@ Table of Contents
               DOI 10.17487/RFC9396, May 2023,
               <https://www.rfc-editor.org/rfc/rfc9396>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-child-delegation]
               McGuinness, K., "Child Mission Delegation for OAuth 2.0",
