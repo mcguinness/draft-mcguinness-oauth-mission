@@ -83,12 +83,13 @@ Table of Contents
    6.  Offline Attenuation
    7.  The Kill Switch Requires Runtime Enforcement
    8.  Relationship to Other Delegation
-   9.  Conformance
-   10. Security Considerations
-   11. IANA Considerations
-   12. References
-     12.1.  Normative References
-     12.2.  Informative References
+   9.  Worked Example
+   10. Conformance
+   11. Security Considerations
+   12. IANA Considerations
+   13. References
+     13.1.  Normative References
+     13.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -248,7 +249,86 @@ Table of Contents
       needs a narrower token under the same Mission, fast, at fan-out
       scale.
 
-9.  Conformance
+9.  Worked Example
+
+   An orchestrator agent (s6BhdRkqt3), acting for alice under Mission
+   msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- to reconcile Q3 invoices, holds
+   a Mission-bound attenuation root.  Its authority covers reading Q3
+   invoices and posting journal entries under $500; del_max_depth allows
+   two levels of offline narrowing.  Decoded root token:
+
+   {
+     "iss": "https://as.example.com",
+     "sub": "user_3p2q8mN1a0kV7tR",
+     "client_id": "s6BhdRkqt3",
+     "iat": 1797840000,
+     "exp": 1797840300,
+     "jti": "aat_root_7M2R4kP9sT1x",
+     "cnf": { "jkt": "0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I" },
+     "del_depth": 0,
+     "del_max_depth": 2,
+     "mission": {
+       "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+       "origin": "https://as.example.com",
+       "authority_hash":
+         "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ"
+     },
+     "authorization_details": [
+       { "type": "attenuating_agent_token",
+         "tools": {
+           "erp.invoices.read": {
+             "period": { "constraint_type": "exact", "value": "2026-Q3" } },
+           "erp.journal-entries.write": {
+             "amount_usd": { "constraint_type": "range", "max": 500 } } } }
+     ]
+   }
+
+   The orchestrator spawns a read-only extraction sub-agent and, with no
+   Authorization Server contact, mints a child that drops the write tool
+   and keeps only the Q3 invoice read.  It signs the child with the key
+   the root's cnf binds, sets iss to that key's thumbprint, increments
+   del_depth, and commits the parent by par_hash:
+
+   {
+     "iss":
+       "urn:ietf:params:oauth:jwk-thumbprint:sha-256:0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I",
+     "sub": "user_3p2q8mN1a0kV7tR",
+     "iat": 1797840030,
+     "exp": 1797840300,
+     "jti": "aat_child_2Yt7Qv9Lq",
+     "cnf": { "jkt": "kP3xR9sQ7nM2vL4tY6bD1eF8jC5wH0pV2nR3kQ4mZ7t" },
+     "par_hash": "9XbVt2nD9bM7sX1cF8gH2vJ4kE5pNQl3KvZ4mP5x0wQ",
+     "del_depth": 1,
+     "del_max_depth": 2,
+     "mission": {
+       "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+       "origin": "https://as.example.com",
+       "authority_hash":
+         "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ"
+     },
+     "authorization_details": [
+       { "type": "attenuating_agent_token",
+         "tools": {
+           "erp.invoices.read": {
+             "period": { "constraint_type": "exact", "value": "2026-Q3" } } } }
+     ]
+   }
+
+   The mission claim is unchanged, the write tool is gone, and the read
+   constraint is unchanged (a permitted narrowing).  To read an invoice
+   the extractor presents the chain [root, child] and a per-invocation
+   proof-of-possession to the gateway.  The gateway verifies the chain
+   (the child's signature under the root's cnf key, par_hash, the depth
+   and capability monotonicity), verifies the proof-of-possession under
+   the child's cnf key, and, because this is Mission-bound, checks that
+   msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- is active within its staleness
+   bound (Section 7).  A write attempt by the extractor fails on
+   capability monotonicity: erp.journal-entries.write is not in its
+   tools.  And when alice revokes the Mission, the next read fails the
+   state check and the whole chain stops, even though no issuer ever saw
+   the child and the child's exp has not passed.
+
+10.  Conformance
 
    A Mission Issuer conforming to this profile MUST bound a Mission-
    bound attenuation root by the Mission's Authority Set and carry the
@@ -259,7 +339,7 @@ Table of Contents
    state per Section 7.  A deployment MUST NOT claim this profile on a
    path that does not enforce Mission state.
 
-10.  Security Considerations
+11.  Security Considerations
 
    The security considerations of the issuance profile, the runtime
    profile, and the attenuation substrate apply.  This profile adds:
@@ -290,7 +370,7 @@ Table of Contents
       ([I-D.draft-mcguinness-oauth-mission-runtime]) is the audit record
       for offline-attenuated actions.
 
-11.  IANA Considerations
+12.  IANA Considerations
 
    This document makes no IANA request.  A Mission-bound attenuation
    root carries the mission claim, which the issuance profile registers
@@ -299,9 +379,9 @@ Table of Contents
    combines them by reference and defines no new claim, parameter, or
    registry.
 
-12.  References
+13.  References
 
-12.1.  Normative References
+13.1.  Normative References
 
    [I-D.draft-mcguinness-oauth-mission]
               McGuinness, K., "Mission-Bound Authorization for OAuth
@@ -338,7 +418,7 @@ Table of Contents
               DOI 10.17487/RFC9396, May 2023,
               <https://www.rfc-editor.org/rfc/rfc9396>.
 
-12.2.  Informative References
+13.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-child-delegation]
               McGuinness, K., "Child Mission Delegation for OAuth 2.0",

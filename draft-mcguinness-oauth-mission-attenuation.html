@@ -1196,30 +1196,33 @@ Authorization-Server-mediated delegation.<a href="#section-abstract-1" class="pi
             <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-relationship-to-other-deleg" class="internal xref">Relationship to Other Delegation</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
-            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-conformance" class="internal xref">Conformance</a></p>
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-worked-example" class="internal xref">Worked Example</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
-            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-conformance" class="internal xref">Conformance</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
-            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
-            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.1">
-                <p id="section-toc.1-1.12.2.1.1"><a href="#section-12.1" class="auto internal xref">12.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12.2.2">
-                <p id="section-toc.1-1.12.2.2.1"><a href="#section-12.2" class="auto internal xref">12.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.1">
+                <p id="section-toc.1-1.13.2.1.1"><a href="#section-13.1" class="auto internal xref">13.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13.2.2">
+                <p id="section-toc.1-1.13.2.2.1"><a href="#section-13.2" class="auto internal xref">13.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
-            <p id="section-toc.1-1.13.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
-</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
-            <p id="section-toc.1-1.14.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+            <p id="section-toc.1-1.14.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
 </li>
         </ul>
 </nav>
@@ -1413,83 +1416,170 @@ the same Mission, fast, at fan-out scale.<a href="#section-8-2.2.1" class="pilcr
       </ul>
 </section>
 </div>
-<div id="conformance">
+<div id="example">
 <section id="section-9">
-      <h2 id="name-conformance">
-<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-conformance" class="section-name selfRef">Conformance</a>
+      <h2 id="name-worked-example">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-worked-example" class="section-name selfRef">Worked Example</a>
       </h2>
-<p id="section-9-1">A Mission Issuer conforming to this profile <span class="bcp14">MUST</span> bound a Mission-bound
+<p id="section-9-1">An orchestrator agent (<code>s6BhdRkqt3</code>), acting for <code>alice</code> under Mission
+<code>msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-</code> to reconcile Q3 invoices, holds a
+Mission-bound attenuation root. Its authority covers reading Q3 invoices
+and posting journal entries under $500; <code>del_max_depth</code> allows two
+levels of offline narrowing. Decoded root token:<a href="#section-9-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-9-2">
+<pre>
+{
+  "iss": "https://as.example.com",
+  "sub": "user_3p2q8mN1a0kV7tR",
+  "client_id": "s6BhdRkqt3",
+  "iat": 1797840000,
+  "exp": 1797840300,
+  "jti": "aat_root_7M2R4kP9sT1x",
+  "cnf": { "jkt": "0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I" },
+  "del_depth": 0,
+  "del_max_depth": 2,
+  "mission": {
+    "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+    "origin": "https://as.example.com",
+    "authority_hash":
+      "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ"
+  },
+  "authorization_details": [
+    { "type": "attenuating_agent_token",
+      "tools": {
+        "erp.invoices.read": {
+          "period": { "constraint_type": "exact", "value": "2026-Q3" } },
+        "erp.journal-entries.write": {
+          "amount_usd": { "constraint_type": "range", "max": 500 } } } }
+  ]
+}
+</pre><a href="#section-9-2" class="pilcrow">¶</a>
+</div>
+<p id="section-9-3">The orchestrator spawns a read-only extraction sub-agent and, with no
+Authorization Server contact, mints a child that drops the write tool
+and keeps only the Q3 invoice read. It signs the child with the key the
+root's <code>cnf</code> binds, sets <code>iss</code> to that key's thumbprint, increments
+<code>del_depth</code>, and commits the parent by <code>par_hash</code>:<a href="#section-9-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-9-4">
+<pre>
+{
+  "iss":
+    "urn:ietf:params:oauth:jwk-thumbprint:sha-256:0ZcOCORZNYy-DWpqq30jZyJGHTN0d2HglBV3uiguA4I",
+  "sub": "user_3p2q8mN1a0kV7tR",
+  "iat": 1797840030,
+  "exp": 1797840300,
+  "jti": "aat_child_2Yt7Qv9Lq",
+  "cnf": { "jkt": "kP3xR9sQ7nM2vL4tY6bD1eF8jC5wH0pV2nR3kQ4mZ7t" },
+  "par_hash": "9XbVt2nD9bM7sX1cF8gH2vJ4kE5pNQl3KvZ4mP5x0wQ",
+  "del_depth": 1,
+  "del_max_depth": 2,
+  "mission": {
+    "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+    "origin": "https://as.example.com",
+    "authority_hash":
+      "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ"
+  },
+  "authorization_details": [
+    { "type": "attenuating_agent_token",
+      "tools": {
+        "erp.invoices.read": {
+          "period": { "constraint_type": "exact", "value": "2026-Q3" } } } }
+  ]
+}
+</pre><a href="#section-9-4" class="pilcrow">¶</a>
+</div>
+<p id="section-9-5">The <code>mission</code> claim is unchanged, the write tool is gone, and the read
+constraint is unchanged (a permitted narrowing). To read an invoice the
+extractor presents the chain <code>[root, child]</code> and a per-invocation
+proof-of-possession to the gateway. The gateway verifies the chain (the
+child's signature under the root's <code>cnf</code> key, <code>par_hash</code>, the depth and
+capability monotonicity), verifies the proof-of-possession under the
+child's <code>cnf</code> key, and, because this is Mission-bound, checks that
+<code>msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-</code> is <code>active</code> within its staleness
+bound (<a href="#kill-switch" class="auto internal xref">Section 7</a>). A write attempt by the extractor fails on
+capability monotonicity: <code>erp.journal-entries.write</code> is not in its tools.
+And when <code>alice</code> revokes the Mission, the next read fails the state
+check and the whole chain stops, even though no issuer ever saw the
+child and the child's <code>exp</code> has not passed.<a href="#section-9-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conformance">
+<section id="section-10">
+      <h2 id="name-conformance">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-conformance" class="section-name selfRef">Conformance</a>
+      </h2>
+<p id="section-10-1">A Mission Issuer conforming to this profile <span class="bcp14">MUST</span> bound a Mission-bound
 attenuation root by the Mission's Authority Set and carry the <code>mission</code>
 claim and confirmation key on it. A consumer conforming to this profile
 <span class="bcp14">MUST</span> verify the attenuation chain and proof-of-possession per the
 attenuation substrate, <span class="bcp14">MUST</span> carry the <code>mission</code> claim unchanged across
 the chain, and <span class="bcp14">MUST</span> enforce current Mission state per <a href="#kill-switch" class="auto internal xref">Section 7</a>. A
 deployment <span class="bcp14">MUST NOT</span> claim this profile on a path that does not enforce
-Mission state.<a href="#section-9-1" class="pilcrow">¶</a></p>
+Mission state.<a href="#section-10-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
-<section id="section-10">
+<section id="section-11">
       <h2 id="name-security-considerations">
-<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-10-1">The security considerations of the issuance profile, the runtime
-profile, and the attenuation substrate apply. This profile adds:<a href="#section-10-1" class="pilcrow">¶</a></p>
+<p id="section-11-1">The security considerations of the issuance profile, the runtime
+profile, and the attenuation substrate apply. This profile adds:<a href="#section-11-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-10-2.1">
-          <p id="section-10-2.1.1">No native revocation. Offline children cannot be recalled by the
+<li class="normal" id="section-11-2.1">
+          <p id="section-11-2.1.1">No native revocation. Offline children cannot be recalled by the
 issuer; the kill switch is the runtime Mission-state check
 (<a href="#kill-switch" class="auto internal xref">Section 7</a>), which is mandatory for this profile. A deployment
-that cannot enforce Mission state <span class="bcp14">MUST NOT</span> accept these tokens.<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
+that cannot enforce Mission state <span class="bcp14">MUST NOT</span> accept these tokens.<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-10-2.2">
-          <p id="section-10-2.2.1">Stale authority. A child's <code>exp</code> bounds its life absent a state check;
+        <li class="normal" id="section-11-2.2">
+          <p id="section-11-2.2.1">Stale authority. A child's <code>exp</code> bounds its life absent a state check;
 a deployment <span class="bcp14">SHOULD</span> keep child lifetimes short so that even a path
-with a coarse staleness bound limits exposure.<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
+with a coarse staleness bound limits exposure.<a href="#section-11-2.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-10-2.3">
-          <p id="section-10-2.3.1">Holder-key compromise. A compromised holder can mint any narrower
+        <li class="normal" id="section-11-2.3">
+          <p id="section-11-2.3.1">Holder-key compromise. A compromised holder can mint any narrower
 child within its authority, offline and unobserved. The bound is that
 it can only narrow, never broaden (capability monotonicity), and that
 the runtime layer still gates every action against the Mission; the
-compromise does not widen authority or evade revocation.<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
+compromise does not widen authority or evade revocation.<a href="#section-11-2.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-10-2.4">
-          <p id="section-10-2.4.1">Depth and fan-out. <code>del_max_depth</code> bounds chain depth; a deployment
+        <li class="normal" id="section-11-2.4">
+          <p id="section-11-2.4.1">Depth and fan-out. <code>del_max_depth</code> bounds chain depth; a deployment
 <span class="bcp14">SHOULD</span> set it, and <span class="bcp14">SHOULD</span> bound fan-out breadth by policy, since
-offline minting is unobserved by the issuer.<a href="#section-10-2.4.1" class="pilcrow">¶</a></p>
+offline minting is unobserved by the issuer.<a href="#section-11-2.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-10-2.5">
-          <p id="section-10-2.5.1">Audit. Because the issuer does not observe offline derivations, the
+        <li class="normal" id="section-11-2.5">
+          <p id="section-11-2.5.1">Audit. Because the issuer does not observe offline derivations, the
 consuming enforcement points are the only place a derivation is seen;
 runtime enforcement evidence
 (<span>[<a href="#I-D.draft-mcguinness-oauth-mission-runtime" class="cite xref">I-D.draft-mcguinness-oauth-mission-runtime</a>]</span>) is the audit record
-for offline-attenuated actions.<a href="#section-10-2.5.1" class="pilcrow">¶</a></p>
+for offline-attenuated actions.<a href="#section-11-2.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 </section>
 </div>
 <div id="iana">
-<section id="section-11">
+<section id="section-12">
       <h2 id="name-iana-considerations">
-<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-11-1">This document makes no IANA request. A Mission-bound attenuation root
+<p id="section-12-1">This document makes no IANA request. A Mission-bound attenuation root
 carries the <code>mission</code> claim, which the issuance profile registers as an
 open object, and the <code>attenuating_agent_token</code> authorization detail,
 which the attenuation substrate registers; this profile combines them by
-reference and defines no new claim, parameter, or registry.<a href="#section-11-1" class="pilcrow">¶</a></p>
+reference and defines no new claim, parameter, or registry.<a href="#section-12-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-combined-references">
-<section id="section-12">
+<section id="section-13">
       <h2 id="name-references">
-<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-12.1">
+<section id="section-13.1">
         <h3 id="name-normative-references">
-<a href="#section-12.1" class="section-number selfRef">12.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-13.1" class="section-number selfRef">13.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
 <dt id="I-D.draft-mcguinness-oauth-mission">[I-D.draft-mcguinness-oauth-mission]</dt>
@@ -1520,9 +1610,9 @@ reference and defines no new claim, parameter, or registry.<a href="#section-11-
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-12.2">
+<section id="section-13.2">
         <h3 id="name-informative-references">
-<a href="#section-12.2" class="section-number selfRef">12.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-13.2" class="section-number selfRef">13.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
 <dt id="I-D.draft-mcguinness-oauth-mission-child-delegation">[I-D.draft-mcguinness-oauth-mission-child-delegation]</dt>

@@ -83,14 +83,15 @@ Table of Contents
    5.  Registering Mission Evidence
    6.  The Mission as Subject
    7.  Receipts and Transparent Statements
-   8.  What Transparency Adds, and Does Not
-   9.  Conformance
-   10. Security Considerations
-   11. Privacy Considerations
-   12. IANA Considerations
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   8.  Worked Example
+   9.  What Transparency Adds, and Does Not
+   10. Conformance
+   11. Security Considerations
+   12. Privacy Considerations
+   13. IANA Considerations
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -121,7 +122,7 @@ Table of Contents
    This adds transparency to evidence the suite already defines; it
    defines no new evidence object.  It is OPTIONAL, and what it proves
    is bounded: transparency makes misbehavior detectable and
-   attributable, it does not make a dishonest issuer honest (Section 8).
+   attributable, it does not make a dishonest issuer honest (Section 9).
 
 2.  Status: An OPTIONAL Extension
 
@@ -181,7 +182,7 @@ Table of Contents
    evidence's existing integrity anchor or evidence-envelope digest
    ([I-D.draft-mcguinness-oauth-mission]); where the evidence has no
    such anchor, the producer computes one over the evidence's canonical
-   bytes.  This keeps sensitive task data out of the log (Section 11):
+   bytes.  This keeps sensitive task data out of the log (Section 12):
    the log proves a specific record was registered at a time, and the
    record is retrieved separately, under access control, and checked
    against the committed hash.
@@ -227,7 +228,58 @@ Table of Contents
    that distrusts one service can then rely on another, and equivocation
    by one service is detectable against the others.
 
-8.  What Transparency Adds, and Does Not
+8.  Worked Example
+
+   At the approval event for Mission
+   msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-, the Mission Issuer records
+   Consent Evidence and registers it.  It does not put the disclosure in
+   the log; it signs a Signed Statement whose payload is detached and
+   whose content_type names the evidence, committing to the evidence by
+   its consent_rendering_hash.  The sub is the Mission feed, derived
+   from the Mission origin and id; the iss is the Mission Issuer.
+   Protected header, in COSE EDN ([RFC9052]):
+
+   {
+     / alg /          1: -7,             / ES256 /
+     / content_type / 3: "application/mission-consent-evidence+json",
+     / kid /          4: h'61732d6b65792d323032362d7133',
+     / CWT Claims /  15: {
+       / iss / 1: "https://as.example.com",
+       / sub / 2: "https://as.example.com/missions/msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-"
+     }
+   }
+
+   The signed payload is detached; the committed value is the evidence's
+   consent_rendering_hash, sha-
+   256:CnS3nT9sQ7nM2vL4tY6bD1eF8jC5wH0pV2nR3kQ4xVz.  The Transparency
+   Service appends the statement and returns a Receipt, a COSE_Sign1
+   with an inclusion proof in its unprotected header, which the Mission
+   Issuer keeps with the evidence as a Transparent Statement.
+
+   As the Mission proceeds, its other producers write to the same sub:
+   the PDP registers a decision-evidence commitment when it permits the
+   journal-entries.write, and the Mission Issuer registers a lifecycle-
+   change commitment when alice later completes the Mission.  Querying
+   the Transparency Service for that one sub returns the Mission's whole
+   history, in order, append-only:
+
+   sub = https://as.example.com/missions/msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-
+
+     #1  approval-event        iss=as.example.com    t0
+     #2  consent-evidence      iss=as.example.com    t0
+     #3  decision-evidence     iss=pdp.example.com   t0+6h
+     #4  lifecycle: completed  iss=as.example.com    t0+6h
+
+   A compliance auditor in another domain, holding none of these
+   deployments' logs, takes the Transparent Statement for #2, verifies
+   the Receipt against the Transparency Service's published key and the
+   inclusion proof, retrieves the Consent Evidence under access control,
+   and checks it against the committed consent_rendering_hash.  The
+   auditor now knows that exact disclosure was registered at t0 and has
+   not since been altered, dropped, or reordered, without trusting the
+   Mission Issuer's own records.
+
+9.  What Transparency Adds, and Does Not
 
    Transparency makes the evidence set tamper-evident and independently
    verifiable: a registered record cannot be silently backdated,
@@ -247,7 +299,7 @@ Table of Contents
    the retrievable evidence proves only that some record was logged, not
    what it said.
 
-9.  Conformance
+10.  Conformance
 
    A producer conforming to this profile MUST register Mission evidence
    as Signed Statements with a detached hash commitment, set sub to the
@@ -257,14 +309,14 @@ Table of Contents
    the retrieved evidence against the committed hash, before relying on
    it as transparent.
 
-10.  Security Considerations
+11.  Security Considerations
 
    The transparency substrate's security considerations apply.  This
    profile adds:
 
    *  Accountability, not prevention.  Transparency detects and
       attributes tampering and omission after the fact; it does not stop
-      a producer from registering a false record (Section 8).
+      a producer from registering a false record (Section 9).
 
    *  Transparency Service trust.  A single service is trusted not to
       equivocate; a deployment that needs that property checked SHOULD
@@ -280,7 +332,7 @@ Table of Contents
       the Transparency Service key that signs it; relying parties manage
       those trust anchors as they do the producers'.
 
-11.  Privacy Considerations
+12.  Privacy Considerations
 
    A Transparency Service log is append-only and may be widely readable,
    so nothing registered can be redacted later.  A producer MUST NOT
@@ -295,7 +347,7 @@ Table of Contents
    Mission's mere existence and cadence are sensitive before registering
    its evidence in a shared log.
 
-12.  IANA Considerations
+13.  IANA Considerations
 
    This document makes no IANA request.  It reuses the Signed Statement
    and Receipt media types of the transparency substrate
@@ -303,9 +355,9 @@ Table of Contents
    the suite, and derives the sub by profile rather than registering a
    new identifier.
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [I-D.draft-ietf-scitt-architecture]
               Birkholz, H., Delignat-Lavaud, A., Fournet, C., Deshpande,
@@ -336,7 +388,7 @@ Table of Contents
               DOI 10.17487/RFC9052, August 2022,
               <https://www.rfc-editor.org/rfc/rfc9052>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-consent-evidence]
               McGuinness, K., "Mission Consent Evidence for OAuth 2.0",

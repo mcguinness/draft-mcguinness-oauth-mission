@@ -82,13 +82,14 @@ Table of Contents
      6.1.  The Revision Required signal
      6.2.  Submitting a revision
    7.  Integration with the Mission Suite
-   8.  Conformance
-   9.  Security Considerations
-   10. Privacy Considerations
-   11. IANA Considerations
-   12. References
-     12.1.  Normative References
-     12.2.  Informative References
+   8.  Worked Example
+   9.  Conformance
+   10. Security Considerations
+   11. Privacy Considerations
+   12. IANA Considerations
+   13. References
+     13.1.  Normative References
+     13.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -193,7 +194,7 @@ Table of Contents
    completion_mode=deferred revisable
 
    revisable is a completion-mode value registered in the deferred
-   substrate's OAuth Completion Mode Values registry (Section 11).  It
+   substrate's OAuth Completion Mode Values registry (Section 12).  It
    authorizes only the revision handshake defined here.  A Mission
    Issuer MUST NOT invite a revision unless the client offered
    revisable.
@@ -309,7 +310,91 @@ Table of Contents
    step human (progressive authorization,
    [I-D.draft-mcguinness-oauth-mission-expansion]).
 
-8.  Conformance
+8.  Worked Example
+
+   Agent s6BhdRkqt3, acting for alice, proposes a Mission to reconcile
+   Q3 invoices that asks for both read and write on the ERP.  It submits
+   the Mission Intent through PAR and opts in to both deferral and
+   revision on the token request:
+
+   POST /token HTTP/1.1
+   Host: as.example.com
+   Content-Type: application/x-www-form-urlencoded
+
+   grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA&
+   client_id=s6BhdRkqt3&
+   completion_mode=deferred%20revisable
+
+   The Mission Issuer routes the proposed Mission to alice for review
+   and defers:
+
+   HTTP/1.1 400 Bad Request
+   Content-Type: application/json
+   Cache-Control: no-store
+
+   { "error": "authorization_pending",
+     "deferral_code": "dfc_7M2R4kP9sT1x",
+     "expires_in": 600, "interval": 5 }
+
+   The agent polls with the deferred grant type.  On review alice
+   approves read but not write.  Rather than deny, the Mission Issuer
+   narrows and invites a revision, extending the pending response:
+
+   HTTP/1.1 400 Bad Request
+   Content-Type: application/json
+   Cache-Control: no-store
+
+   { "error": "authorization_pending",
+     "deferral_code": "dfc_7M2R4kP9sT1x",
+     "revision_required": true,
+     "clarification_handle": "clh_4QFJ3P9wZ2",
+     "rejected_authorization_details": [
+       { "type": "mission_resource_access",
+         "resource": "https://erp.example.com",
+         "actions": ["journal-entries.write"] } ],
+     "expires_in": 540, "interval": 5 }
+
+   The agent pushes a narrowed Mission Intent, dropping the write, to
+   PAR with the clarification handle:
+
+   POST /par HTTP/1.1
+   Host: as.example.com
+   Content-Type: application/x-www-form-urlencoded
+
+   mission_intent=%7B...read-only%20Q3%20invoices...%7D&
+   client_id=s6BhdRkqt3&
+   clarification_handle=clh_4QFJ3P9wZ2
+
+   The Mission Issuer verifies the handle, confirms the revised
+   Authority Set is a subset of the proposed one, updates the deferred
+   approval, and re-reviews (here, policy auto-approves the now-narrower
+   read-only Mission).  The agent keeps polling the same deferral_code,
+   which now resolves to a Mission-bound token over the final, narrowed
+   authority:
+
+   HTTP/1.1 200 OK
+   Content-Type: application/json
+   Cache-Control: no-store
+
+   { "access_token": "eyJ...",
+     "token_type": "DPoP",
+     "expires_in": 300,
+     "authorization_details": [
+       { "type": "mission_resource_access",
+         "resource": "https://erp.example.com",
+         "actions": ["invoices.read"],
+         "constraints": { "period": "2026-Q3" } } ],
+     "mission": {
+       "id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+       "origin": "https://as.example.com",
+       "authority_hash":
+         "sha-256:l3KvZ4mP5x0wQrR6tY2nD9bM7sX1cF8gH2vJ4kE5pNQ" } }
+
+   The agent never abandoned its request; the approval resolved over the
+   narrowed proposal, and the committed authority_hash is over the read-
+   only Authority Set actually approved.
+
+9.  Conformance
 
    A Mission Issuer conforming to this profile MUST:
 
@@ -329,7 +414,7 @@ Table of Contents
    response as unapproved, submit only narrowing revisions, and continue
    polling the existing deferral_code.
 
-9.  Security Considerations
+10.  Security Considerations
 
    The deferred substrate's security considerations apply in full,
    including deferral-code entropy, sender-constraint continuity,
@@ -367,7 +452,7 @@ Table of Contents
       per deferred approval and log excessive cycles as a security
       event.
 
-10.  Privacy Considerations
+11.  Privacy Considerations
 
    The rejected-dimension parameters and the revision history reveal
    what authority an agent sought and was refused.  A Mission Issuer
@@ -375,7 +460,7 @@ Table of Contents
    retain revision history under the same controls as other approval-
    event records.
 
-11.  IANA Considerations
+12.  IANA Considerations
 
    This document registers one value in the OAuth Completion Mode Values
    registry established by the deferred substrate
@@ -401,9 +486,9 @@ Table of Contents
    submission of the narrowed Intent and clarification_handle needs no
    separate registration.
 
-12.  References
+13.  References
 
-12.1.  Normative References
+13.1.  Normative References
 
    [I-D.draft-gerber-oauth-deferred-token-response]
               Jacobsen, F. K., de Oliveira Niero, G., and M. Gerber,
@@ -438,7 +523,7 @@ Table of Contents
               DOI 10.17487/RFC9396, May 2023,
               <https://www.rfc-editor.org/rfc/rfc9396>.
 
-12.2.  Informative References
+13.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-consent-evidence]
               McGuinness, K., "Mission Consent Evidence for OAuth 2.0",

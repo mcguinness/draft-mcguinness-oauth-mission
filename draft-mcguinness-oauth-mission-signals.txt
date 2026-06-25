@@ -78,19 +78,20 @@ Table of Contents
    5.  SET Protection
    6.  Consumer Behavior on Receipt
    7.  Relationship to Revocation Propagation
-   8.  Authorization Server Metadata
-   9.  Security Considerations
-     9.1.  Forged or Replayed Events
-     9.2.  Missed Events Are Not Fail-Open
-     9.3.  General OAuth Security
-   10. Privacy Considerations
-   11. Conformance
-   12. IANA Considerations
-     12.1.  Security Event Token Type
-     12.2.  OAuth Authorization Server Metadata Registration
-   13. References
-     13.1.  Normative References
-     13.2.  Informative References
+   8.  Worked Example
+   9.  Authorization Server Metadata
+   10. Security Considerations
+     10.1.  Forged or Replayed Events
+     10.2.  Missed Events Are Not Fail-Open
+     10.3.  General OAuth Security
+   11. Privacy Considerations
+   12. Conformance
+   13. IANA Considerations
+     13.1.  Security Event Token Type
+     13.2.  OAuth Authorization Server Metadata Registration
+   14. References
+     14.1.  Normative References
+     14.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -116,7 +117,7 @@ Table of Contents
    consumer that receives a non-active transition stops honoring the
    Mission (Section 6).  A deployment offers this channel by publishing
    the event stream (Section 3); consumers discover it from
-   mission_event_stream_endpoint (Section 8).
+   mission_event_stream_endpoint (Section 9).
 
    This document is OPTIONAL.  It defines no new Mission semantics: the
    Mission, its lifecycle states, and the mission claim are defined in
@@ -161,7 +162,7 @@ Table of Contents
 
    A Mission Issuer that emits lifecycle events publishes a Shared
    Signals Framework [OIDC-SSF] stream and advertises it in
-   Authorization Server metadata (Section 8) as
+   Authorization Server metadata (Section 9) as
    mission_event_stream_endpoint.  The endpoint and its configuration
    follow [OIDC-SSF]; this document profiles only the event carried, its
    protection, and the consumer's duty on receipt.  The stream MUST be
@@ -194,7 +195,7 @@ Table of Contents
    [OIDC-SSF] and informed by the Continuous Access Evaluation Profile
    [OIDC-CAEP], when it commits any Mission lifecycle transition or the
    approval event that activates a Mission.  The event type URI, defined
-   in this document and described in Section 12, is:
+   in this document and described in Section 13, is:
 
    https://schemas.karlmcguinness.com/secevent/mission/lifecycle-change
 
@@ -333,14 +334,50 @@ Table of Contents
    offers it emits mission.lifecycle-change events (Section 4) over the
    stream (Section 3), and consumers subscribe and apply Section 6.  A
    deployment that offers event-driven propagation MUST advertise
-   mission_event_stream_endpoint (Section 8) and support at least one
+   mission_event_stream_endpoint (Section 9) and support at least one
    SSF delivery method (Section 3), so consumers discover it.
 
    This document neither requires nor presumes event-driven propagation;
    a Mission Issuer MAY emit lifecycle events for audit or operational
    purposes independent of any consumer's enforcement posture.
 
-8.  Authorization Server Metadata
+8.  Worked Example
+
+   A partner ERP (erp.partner.example.com) consumes Mission lifecycle
+   signals so it can stop honoring a Mission promptly rather than wait
+   out token lifetimes. alice cancels her Q3 reconciliation Mission.
+   The Mission Issuer commits the revoked transition and pushes a SET to
+   the consumer's receiver ([RFC8935]).  Decoded SET:
+
+   {
+     "iss": "https://as.example.com",
+     "aud": "https://erp.partner.example.com",
+     "iat": 1797843600,
+     "jti": "set_5kQ8mP2vR9nT",
+     "events": {
+       "https://schemas.karlmcguinness.com/secevent/mission/lifecycle-change": {
+         "mission_id": "msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9-",
+         "mission_origin": "https://as.example.com",
+         "state": "revoked",
+         "prior_state": "active",
+         "version": 7,
+         "committed_at": "2026-11-02T09:00:00Z",
+         "reason": "user_cancelled"
+       }
+     }
+   }
+
+   The consumer verifies the SET signature, iss, aud, and jti, sees
+   version 7 is newer than any state it holds, and records the Mission
+   as revoked.  Because revoked is non-active, the consumer stops
+   relying on the Mission: the next attempt to use a token bound to
+   msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- is refused, seconds after the
+   cancellation, well inside the token's remaining lifetime.  Had a
+   stale active event for an earlier version arrived afterward, the
+   version counter would cause the consumer to ignore it rather than
+   revive the Mission.
+
+9.  Authorization Server Metadata
 
    A Mission Issuer that emits lifecycle events advertises the following
    in its Authorization Server metadata [RFC8414], in addition to the
@@ -353,14 +390,14 @@ Table of Contents
       discovered from the SSF stream configuration's
       delivery_methods_supported, not from a separate metadata member.
 
-9.  Security Considerations
+10.  Security Considerations
 
    The security considerations of the issuance profile
    [I-D.draft-mcguinness-oauth-mission] and the Status profile
    [I-D.draft-mcguinness-oauth-mission-status] apply.  This section
    covers threats specific to event propagation.
 
-9.1.  Forged or Replayed Events
+10.1.  Forged or Replayed Events
 
    A forged event could suppress a Mission (a spurious revoked) or, more
    dangerously, mask a revocation (a spurious active).  SET signing
@@ -369,7 +406,7 @@ Table of Contents
    replayed jti.  The version ordering rule (Section 6) prevents an old
    active event from overriding a newer revoked one.
 
-9.2.  Missed Events Are Not Fail-Open
+10.2.  Missed Events Are Not Fail-Open
 
    Event delivery is best-effort; a consumer that treats "no event" as
    "still active" indefinitely defeats the purpose.  A consumer MUST
@@ -378,13 +415,13 @@ Table of Contents
    leave a Mission honored past the deployment's advertised staleness
    bound.
 
-9.3.  General OAuth Security
+10.3.  General OAuth Security
 
    This document inherits OAuth 2.0 Best Current Practice [RFC9700] for
    the OAuth surfaces it composes with; implementers MUST follow current
    OAuth security guidance.
 
-10.  Privacy Considerations
+11.  Privacy Considerations
 
    A mission.lifecycle-change event discloses a Mission's identifier,
    state transitions, and timing to its receivers.  A Mission Issuer
@@ -396,14 +433,14 @@ Table of Contents
    surfaces with the privacy posture of
    [I-D.draft-mcguinness-oauth-mission-status].
 
-11.  Conformance
+12.  Conformance
 
    This document is OPTIONAL.  An implementation that claims it:
 
    *  as a *Mission Issuer*, emits a signed mission.lifecycle-change SET
       (Section 4, Section 5) on every committed Mission lifecycle
       transition, supports at least one SSF delivery method (Section 3),
-      and advertises mission_event_stream_endpoint (Section 8);
+      and advertises mission_event_stream_endpoint (Section 9);
 
    *  as a *consumer*, verifies and applies received events per
       Section 5 and Section 6.
@@ -411,9 +448,9 @@ Table of Contents
    An implementation that supports neither role is still a conforming
    issuance profile [I-D.draft-mcguinness-oauth-mission].
 
-12.  IANA Considerations
+13.  IANA Considerations
 
-12.1.  Security Event Token Type
+13.1.  Security Event Token Type
 
    IANA is not requested to create a registry.  This document defines
    the following Security Event Token (SET) [RFC8417] event type URI
@@ -444,17 +481,17 @@ Table of Contents
    that needs a binding shared definition should pursue a registered
    event type rather than depend on the author-controlled URI.
 
-12.2.  OAuth Authorization Server Metadata Registration
+13.2.  OAuth Authorization Server Metadata Registration
 
    IANA is requested to register the following in the "OAuth
    Authorization Server Metadata" registry [RFC8414].  For each: Change
-   Controller IETF; Reference this document, Section 8.
+   Controller IETF; Reference this document, Section 9.
 
    *  mission_event_stream_endpoint
 
-13.  References
+14.  References
 
-13.1.  Normative References
+14.1.  Normative References
 
    [I-D.draft-mcguinness-oauth-mission]
               McGuinness, K., "Mission-Bound Authorization for OAuth
@@ -513,7 +550,7 @@ Table of Contents
               (DTLS)", BCP 195, RFC 9325, DOI 10.17487/RFC9325, November
               2022, <https://www.rfc-editor.org/rfc/rfc9325>.
 
-13.2.  Informative References
+14.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-child-delegation]
               McGuinness, K., "Child Mission Delegation for OAuth 2.0",

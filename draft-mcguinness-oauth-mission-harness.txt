@@ -91,18 +91,19 @@ Table of Contents
    11. Untrusted Content and Egress
    12. Harness Evidence
      12.1.  Harness Evidence Object
-   13. Conformance
-   14. Security Considerations
-     14.1.  Session Continuity Is Not Authority Continuity
-     14.2.  Cached Access as Ambient Authority
-     14.3.  Sub-Agent Fan-Out
-     14.4.  Split-Brain Session State
-     14.5.  Tool Cache Confusion
-   15. Privacy Considerations
-   16. IANA Considerations
-   17. References
-     17.1.  Normative References
-     17.2.  Informative References
+   13. Worked Example
+   14. Conformance
+   15. Security Considerations
+     15.1.  Session Continuity Is Not Authority Continuity
+     15.2.  Cached Access as Ambient Authority
+     15.3.  Sub-Agent Fan-Out
+     15.4.  Split-Brain Session State
+     15.5.  Tool Cache Confusion
+   16. Privacy Considerations
+   17. IANA Considerations
+   18. References
+     18.1.  Normative References
+     18.2.  Informative References
    Acknowledgments
    Author's Address
 
@@ -140,7 +141,7 @@ Table of Contents
 
    *  harness evidence (Section 12); and
 
-   *  conformance for a Mission-aware harness (Section 13).
+   *  conformance for a Mission-aware harness (Section 14).
 
    This document does not define a new OAuth token, a new agent
    protocol, or a replacement for Resource Server enforcement.  A
@@ -687,7 +688,32 @@ Table of Contents
      "occurred_at": "2026-11-02T08:16:00Z"
    }
 
-13.  Conformance
+13.  Worked Example
+
+   An agent reconciling Q3 invoices under Mission
+   msn_8RfX2Lqv9TqMv4z7sA2bN1k0YpEdHc9- runs as an overnight background
+   job, so its session outlives alice's attention.  Two harness moments
+   matter.
+
+   At 02:00 the job resumes a queued task graph.  Before dispatching any
+   governed work the harness re-reads Mission state (Section 5). alice
+   cancelled the Mission at 23:00, so the harness finds it revoked: it
+   does not dispatch, marks cached ERP connections unusable (Section 8),
+   and emits the suppress evidence shown above.  The session was fully
+   recoverable; the authority that justified it was gone, and the
+   harness let the Mission, not the session, decide.
+
+   Earlier, while still active, the agent fetched a vendor email into
+   its working context to extract an invoice number.  That email is
+   untrusted content, so the session is now tainted (Section 11).  When
+   the agent, steered by text in that email, tries to send an external
+   message, the harness does not let the egress proceed on the strength
+   of the fetched content: it requires a fresh action-bound approval
+   first.  The runtime layer would gate the call against the Mission
+   regardless; the harness adds the session-level rule that untrusted
+   input cannot, by itself, drive an egress alice never directed.
+
+14.  Conformance
 
    A conforming Mission-aware harness MUST:
 
@@ -710,42 +736,42 @@ Table of Contents
    MAY claim conformance for a documented subset of execution paths if
    it identifies paths outside the claim.
 
-14.  Security Considerations
+15.  Security Considerations
 
-14.1.  Session Continuity Is Not Authority Continuity
+15.1.  Session Continuity Is Not Authority Continuity
 
    The primary threat is treating recoverable runtime state as proof of
    continuing authority.  This profile requires a fresh Mission-state
    decision at continuation points where harnesses would otherwise
    resume automatically.
 
-14.2.  Cached Access as Ambient Authority
+15.2.  Cached Access as Ambient Authority
 
    Cached credentials and tool connections can bypass visible issuance
    or authorization steps.  A harness MUST tie cache use to Mission
    state and runtime enforcement, or cached access becomes ambient
    authority.
 
-14.3.  Sub-Agent Fan-Out
+15.3.  Sub-Agent Fan-Out
 
    Implicit sub-agent inheritance can amplify authority.  This profile
    requires explicit Mission or delegation binding for child handles and
    cascade stop behavior when parent authority ends.
 
-14.4.  Split-Brain Session State
+15.4.  Split-Brain Session State
 
    Multiple workers may resume the same session or queue item.  A
    harness SHOULD use compare-and-set or equivalent concurrency control
    so a stop decision cannot race with a resume decision.  When the
    state is ambiguous, fail closed and suppress governed work.
 
-14.5.  Tool Cache Confusion
+15.5.  Tool Cache Confusion
 
    Tool connection caches often hide which Mission first authorized a
    connection.  Cache keys under Section 8.1 prevent a connection opened
    for one Mission from becoming ambient authority for another.
 
-15.  Privacy Considerations
+16.  Privacy Considerations
 
    Harness Evidence and Mission bindings can reveal task graphs,
    workspace identifiers, tool usage, agent topology, and Mission
@@ -753,13 +779,13 @@ Table of Contents
    control access to evidence, and avoid storing raw workspace content
    in Harness Evidence unless required for audit.
 
-16.  IANA Considerations
+17.  IANA Considerations
 
    This document makes no IANA request.
 
-17.  References
+18.  References
 
-17.1.  Normative References
+18.1.  Normative References
 
    [I-D.draft-mcguinness-oauth-mission]
               McGuinness, K., "Mission-Bound Authorization for OAuth
@@ -800,7 +826,7 @@ Table of Contents
               DOI 10.17487/RFC8259, December 2017,
               <https://www.rfc-editor.org/rfc/rfc8259>.
 
-17.2.  Informative References
+18.2.  Informative References
 
    [I-D.draft-mcguinness-oauth-mission-child-delegation]
               McGuinness, K., "Child Mission Delegation for OAuth 2.0",
