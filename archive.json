@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-25T04:07:53.304448+00:00",
+  "timestamp": "2026-06-28T04:23:14.566925+00:00",
   "repo": "mcguinness/draft-mcguinness-oauth-mission",
   "labels": [
     {
@@ -1502,6 +1502,88 @@
       "mergeCommit": {
         "oid": "381fed9c0692dff6b4ebd6c5a78f721a519c924e"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 53,
+      "id": "PR_kwDOTBXTi87qxWok",
+      "title": "Raise rigor of the three profile drafts (audit, attenuation, approval)",
+      "url": "https://github.com/mcguinness/draft-mcguinness-oauth-mission/pull/53",
+      "state": "MERGED",
+      "author": "mcguinness",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "The three newest drafts (`audit`, `attenuation`, `approval`) are profiles of external substrates (SCITT, Attenuating Agent Tokens, gerber Deferred Token Response) and are intentionally thin. But measured against the issuance profile and the fuller companions they carried genuine rigor gaps. This raises them to the suite bar **without** restating the substrates or padding for length.\n\n## audit (the priority)\n- **Correctness fix:** the `sub` derivation was given as a \"for example\" construction (`origin` URL with `mission_id` as a path/fragment) while also being required to be *identical across independent producers* so they share one feed. Each producer could be individually deterministic yet pick a different construction, fragmenting the feed and breaking the \"one coherent feed an auditor retrieves\" value. Now pins a single canonical construction: `<origin>/missions/<id>`.\n- **Verifier algorithm + failure taxonomy:** the relying-party verification prose is now numbered steps (1\u20135), plus a `Verification Failures` section distinguishing **integrity failure** (transparency claim is false \u2192 reject) from **audit failure** (unretrievable evidence is *not* proof of tampering), mirroring the consent-evidence distinction.\n- Negative case added to the worked example; conformance is now a producer/relying-party checklist.\n\n## attenuation\n- Adds explicit consumer fail-safe rules for the **Mission binding** (which this profile owns and AAT does not define): refuse a chain unless every link carries the same `mission` claim (`id`/`origin`/`authority_hash`) as the root, and do not treat a root without a `mission` claim as Mission-bound. Chain mechanics (`par_hash`, capability monotonicity, depth, PoP) remain the substrate's.\n\n## approval (already rigorous \u2014 minimal)\n- One owned edge case: a Mission Issuer that receives `revisable` without `deferred` MUST ignore it.\n\nAll three build clean (kramdown-rfc + xml2rfc), 0 broken cross-references.\n",
+      "createdAt": "2026-06-25T22:54:26Z",
+      "updatedAt": "2026-06-25T22:55:20Z",
+      "baseRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "baseRefName": "main",
+      "baseRefOid": "381fed9c0692dff6b4ebd6c5a78f721a519c924e",
+      "headRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "headRefName": "build-out-light-profiles",
+      "headRefOid": "d47eaf8c5688c1a68175d680816e7f303d649d33",
+      "closedAt": "2026-06-25T22:55:15Z",
+      "mergedAt": "2026-06-25T22:55:15Z",
+      "mergedBy": "mcguinness",
+      "mergeCommit": {
+        "oid": "afd3810149738dfb1c37c0cfaa79860119fc94ae"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 54,
+      "id": "PR_kwDOTBXTi87q1-Vl",
+      "title": "runtime: relate the enforcement layer to inspection-based controls",
+      "url": "https://github.com/mcguinness/draft-mcguinness-oauth-mission/pull/54",
+      "state": "MERGED",
+      "author": "mcguinness",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Agentic-AI runtime defenses increasingly pair an **authority layer** with an **inspection layer** (deterministic message-flow checks + semantic intent checks). This positions the Mission runtime profile as the authority half and says plainly what it covers and what it doesn't \u2014 folding the useful concepts in as prose, without citing external research (not common in OAuth/IETF specs).\n\n**New security subsection \u2014 \"Relationship to inspection-based controls\":**\n- Maps two existing mechanisms to deterministic integrity checks: **parameter binding** (arguments can't be altered after the decision) and **capability-source binding** in the AuthZEN binding (swapped/poisoned tool definitions fail the decision).\n- Names two adjacent checks as **out of scope**: the integrity of a tool **result relayed back to the model** (an app can still falsify what the model sees), and binding an **executed action to the model's own decision** (mediated execution bounds it to the Authority Set but doesn't bind it to the model's choice; a deployment that can establish that correspondence SHOULD).\n- States the **semantic intent-alignment** stance: such a signal MAY be **advisory** decision input that can only contribute to a *denial*, and MUST NOT widen, grant, or refresh authority \u2014 consistent with the inert treatment of `goal`/`purpose` and the issuance profile's semantic-verification non-goal.\n\n**Out-of-scope register** updated to record both gaps and the advisory-input stance.\n\nBuilds clean (kramdown-rfc + xml2rfc), 0 broken cross-references. +49/\u22122, runtime draft only.\n",
+      "createdAt": "2026-06-26T05:06:10Z",
+      "updatedAt": "2026-06-26T05:07:27Z",
+      "baseRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "baseRefName": "main",
+      "baseRefOid": "afd3810149738dfb1c37c0cfaa79860119fc94ae",
+      "headRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "headRefName": "runtime-inspection-controls",
+      "headRefOid": "812b2a0711c365930cd72935ec7e3273d1662e2a",
+      "closedAt": "2026-06-26T05:07:23Z",
+      "mergedAt": "2026-06-26T05:07:23Z",
+      "mergedBy": "mcguinness",
+      "mergeCommit": {
+        "oid": "3198bd99424d7df738c86e00483fcbb5cb1ab721"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 55,
+      "id": "PR_kwDOTBXTi87q2V11",
+      "title": "consent-evidence: add constraint provenance to the disclosure",
+      "url": "https://github.com/mcguinness/draft-mcguinness-oauth-mission/pull/55",
+      "state": "OPEN",
+      "author": "mcguinness",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Records **which authority imposed each Authority Set bound**, so the Approver and a later auditor see not just a bound but *whose rule* it is \u2014 a delegator ceiling and a court order need different remediation when one fails at the point of use.\n\n**Modeled in the consent layer, not the core.** Provenance is inert disclosure/audit material, so it belongs with the disclosure that is rendered and committed by `consent_rendering_hash`, not in the enforced Authority Set on the token. This:\n- keeps the issuance profile and its subset rule **untouched**,\n- adds **no wire weight** to tokens (the runtime never reads provenance), and\n- puts authorship where auditors already look (audit reconstruction goes through the Mission record / consent evidence; the runtime separately records *which* bound failed, and the join to *whose rule* happens there).\n\n**Shape.** An OPTIONAL `constraint_provenance` member on the Consent Disclosure object: an annotation array of `{ applies_to, source, source_uri }`.\n- `applies_to` identifies the bound by the entry's `resource` and the `constraint` key or `action` \u2014 so it attributes **actions and bounds alike** (a court order can bar an action, not just cap a number), and avoids a name-keyed parallel map that would drift against `constraints`.\n- `source` is a descriptive string (recommended: `subject`, `delegator`, `platform`, `regulatory`, `judicial`).\n- `source_uri` follows the OAuth `*_uri` convention and is URN-friendly for non-dereferenceable instruments (`urn:court:order:2026-55`).\n\nInert by construction: grants no authority, never carried on a token, excluded from enforcement; a consumer that predates it ignores it safely.\n\nBuilds clean (kramdown-rfc + xml2rfc), 0 broken cross-references. Consent-evidence draft only, +41 lines.\n",
+      "createdAt": "2026-06-26T05:31:09Z",
+      "updatedAt": "2026-06-26T05:31:09Z",
+      "baseRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "baseRefName": "main",
+      "baseRefOid": "3198bd99424d7df738c86e00483fcbb5cb1ab721",
+      "headRepository": "mcguinness/draft-mcguinness-oauth-mission",
+      "headRefName": "consent-constraint-provenance",
+      "headRefOid": "11c2ce11e0156069182fd809681dcb231be6359d",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
