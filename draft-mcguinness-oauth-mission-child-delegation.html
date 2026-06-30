@@ -1807,11 +1807,18 @@ the child <code>authority_hash</code> is the immediate authority commitment.<a h
         </h3>
 <p id="section-8.1-1">The child Authority Set subset test is the subset rule of
 <span>[<a href="#I-D.draft-mcguinness-oauth-mission" class="cite xref">I-D.draft-mcguinness-oauth-mission</a>]</span>, applied between each child entry
-and a parent entry: every child resource equal to or narrower than a
-parent resource; every child action a subset of (or deployment-defined
-as narrower than) a parent action; every child constraint equal to or
-stricter than the corresponding parent constraint; and no parent
-constraint removed unless the constrained authority is also removed.
+and a parent entry with no relaxation. As that rule defines it, the
+comparison is flat: a child entry's <code>resource</code> <span class="bcp14">MUST</span> equal a parent
+entry's <code>resource</code>; its <code>actions</code> <span class="bcp14">MUST</span> be a subset of the parent entry's
+<code>actions</code> by array membership; and its <code>constraints</code> <span class="bcp14">MUST</span> be present and
+no broader than the parent's, with no parent constraint dropped unless
+the constrained authority is also removed. Resource containment (a
+path-prefix or hierarchical resource) and action-family narrowing are
+not assumed here: they are available only through the hierarchical
+resource-and-action subset extension the issuance profile defers to
+future work, and absent that extension a Mission Issuer <span class="bcp14">MUST NOT</span> treat a
+child resource as a subset of a parent merely because it is "narrower"
+under a hierarchy this profile does not define.
 This profile adds one strict requirement specific to child delegation:
 a child entry's delegation policy <span class="bcp14">MUST</span> be strictly narrower than the
 parent entry's (lower <code>max_depth</code>, no broader <code>allowed_delegates</code>).<a href="#section-8.1-1" class="pilcrow">¶</a></p>

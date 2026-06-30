@@ -2887,8 +2887,13 @@ before the action.<a href="#section-10-2.1.1" class="pilcrow">¶</a></p>
 staleness bound.<a href="#section-10-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-10-2.3">
-          <p id="section-10-2.3.1"><code>event_driven</code>: the PEP relies on event-channel invalidation; cached
-state is valid until an event invalidates it.<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-10-2.3.1"><code>event_driven</code>: the PEP relies on event-channel invalidation, but the
+cached state remains bounded by the deployment's staleness bound, or
+the lease the state carries, exactly as for <code>cached</code>; it is not valid
+indefinitely. A missed or delayed invalidation event does not extend
+validity, and when the bound elapses without a confirming event the
+PEP <span class="bcp14">MUST</span> refresh from a Mission state source rather than continue on
+the cache.<a href="#section-10-2.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
 <p id="section-10-3">When freshness cannot be established within the bound, the PDP fails
