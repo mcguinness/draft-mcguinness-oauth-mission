@@ -1507,7 +1507,7 @@ Table of Contents
               <https://openid.github.io/authzen/authzen-access-request-
               approval-profile-1_0.html>.
 
-   [COAZ]     OpenID Foundation, "AuthZen Profile for Model Context
+   [COAZ]     OpenID Foundation, "AuthZEN Profile for Model Context
               Protocol Tool Authorization - Draft 1", 2026,
               <https://openid.github.io/authzen/authzen-mcp-profile-
               1_0.html>.
