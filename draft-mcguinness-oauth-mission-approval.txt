@@ -4,8 +4,8 @@
 
 Network Working Group                                      K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Standards Track                            30 June 2026
-Expires: 1 January 2027
+Intended status: Standards Track                             1 July 2026
+Expires: 2 January 2027
 
 
                 Mission Deferred Approval for OAuth 2.0
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 January 2027.
+   This Internet-Draft will expire on 2 January 2027.
 
 Copyright Notice
 
@@ -139,6 +139,14 @@ Table of Contents
    approvals.  The approval event, the Authority Set, the subset rule,
    and the integrity anchors are unchanged; this document governs only
    how the approval is reached over time.
+
+   This profile is *experimental*. It depends normatively on OAuth
+   Deferred Token Response
+   ([I-D.draft-gerber-oauth-deferred-token-response]), an early
+   Internet-Draft that is not ratified and whose details may change.
+   Synchronous Mission approval, which needs only the issuance profile,
+   is the stable path; deploy deferred and revisable approval for
+   evaluation rather than as a stable interface.
 
 3.  Relationship to the Issuance Profile
 

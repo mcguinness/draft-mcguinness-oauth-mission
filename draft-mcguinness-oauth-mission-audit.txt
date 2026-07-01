@@ -4,8 +4,8 @@
 
 Network Working Group                                      K. McGuinness
 Internet-Draft                                               Independent
-Intended status: Standards Track                            30 June 2026
-Expires: 1 January 2027
+Intended status: Standards Track                             1 July 2026
+Expires: 2 January 2027
 
 
                 Mission Audit Transparency for OAuth 2.0
@@ -58,7 +58,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 January 2027.
+   This Internet-Draft will expire on 2 January 2027.
 
 Copyright Notice
 
@@ -135,6 +135,14 @@ Table of Contents
 
    A deployment claims this profile only when it registers Mission
    evidence with a Transparency Service.
+
+   This profile is *experimental*. It depends normatively on the SCITT
+   architecture ([I-D.draft-ietf-scitt-architecture]), which is still in
+   progress and whose details may change; an implementation tracks that
+   work and deploys this profile for evaluation rather than as a stable
+   interface.  The signed evidence the suite produces without a
+   Transparency Service ([I-D.draft-mcguinness-oauth-mission]) does not
+   depend on this profile.
 
 3.  Relationship to the Issuance Profile
 
